@@ -3,7 +3,8 @@ from typing import List, Optional
 
 class Recipe(BaseModel):
   name: str
-  duration: int
+  preparation_duration_minutes: int
+  cooking_duration_minutes: int
   description: str
   servings: int
   ingredients: List[Ingredient]
