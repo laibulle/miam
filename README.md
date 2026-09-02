@@ -25,12 +25,15 @@ __ What don't we know ?__
 - [x] Setup quality tools
 - [x] Setup tests
 - [x] Setup Dockerfile
-- [ ] Setup cloudrun
 - [x] Define UI
-- [ ] Define tools
-- [ ] Define data structures 
-- [ ] Implement agents
+- [x] Define data structures 
+- [x] Implement naive agent
+- [ ] Add Eval
 - [ ] Define guardrails
+- [ ] Define tools
+- [ ] Implement naive agent with tools and eval
+- [ ] Implement multiple agents with tools and eval
+- [ ] Setup cloudrun
 
 ## Getting started 🏁
 
