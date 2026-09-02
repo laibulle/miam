@@ -5,6 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9e564fdd-338d-48bc-8c30-eedf18de3c3d" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/app/.env.dist" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -38,9 +40,9 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "feat/naive__model",
+    "git-widget-placeholder": "main",
     "htmx.bundled.context.provider.enabled": "true",
-    "last_opened_file_path": "/Users/guillaumebailleul/Perso/Pets/marco/src/miam_agent/adapters/in/web",
+    "last_opened_file_path": "/Users/guillaumebailleul/Perso/Pets/marco/app",
     "node.js.detected.package.jshint": "true",
     "node.js.selected.package.jshint": "",
     "nodejs_package_manager_path": "npm"
@@ -48,6 +50,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/app" />
       <recent name="$PROJECT_DIR$/src/miam_agent/adapters/in/web" />
       <recent name="$PROJECT_DIR$/src/miam_agent/adapters/in" />
       <recent name="$PROJECT_DIR$/src/miam_agent/adapters/out" />

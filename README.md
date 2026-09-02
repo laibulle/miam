@@ -38,6 +38,7 @@ __ What don't we know ?__
 ## Getting started 🏁
 
 ```bash
-uv init
-adk run miam_agent
+cp app/.env.dist app/.env
+make sync
+make dev
 ```
