@@ -19,6 +19,14 @@ __ What don't we know ?__
 - The exact agents topology to achieve our goal
 - How to observe our agents communications
 
+## Getting started 🏁
+
+```bash
+cp app/.env.dist app/.env
+make sync
+make dev
+```
+
 ## Roadmap 🛣️
 
 - [x] Setup project architecture
@@ -34,11 +42,3 @@ __ What don't we know ?__
 - [ ] Implement naive agent with tools and eval
 - [ ] Implement multiple agents with tools and eval
 - [ ] Setup cloudrun
-
-## Getting started 🏁
-
-```bash
-cp app/.env.dist app/.env
-make sync
-make dev
-```
