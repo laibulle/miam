@@ -1,7 +1,6 @@
 from app.domain.models import Recipe
-import json
+
 def test_recipe_json_schema():
-    print(json.dumps(Recipe.model_json_schema(), indent=4))
     assert {
         "$defs": {
         "Ingredient": {
@@ -58,8 +57,12 @@ def test_recipe_json_schema():
             "title": "Name",
             "type": "string"
         },
-        "duration": {
-            "title": "Duration",
+        "preparation_duration_minutes": {
+            "title": "Preparation Duration Minutes",
+            "type": "integer"
+        },
+        "cooking_duration_minutes": {
+            "title": "Cooking Duration Minutes",
             "type": "integer"
         },
         "description": {
@@ -103,7 +106,8 @@ def test_recipe_json_schema():
     },
     "required": [
         "name",
-        "duration",
+        "preparation_duration_minutes",
+        "cooking_duration_minutes",
         "description",
         "servings",
         "ingredients",
