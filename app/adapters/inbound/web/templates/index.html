@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="fr" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+
+    <title>Miam — Assistant culinaire</title>
+    <!-- Pratique en développement ; à compiler pour la production -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <style type="text/tailwindcss">
+      @theme {
+        --color-miam: #ff6b35;
+        --color-miam-dark: #d94c1d;
+      }
+
+      @keyframes blink {
+        0%, 45% { opacity: 1; }
+        46%, 100% { opacity: 0; }
+      }
+
+      .stream-cursor::after {
+        content: "▋";
+        margin-left: 0.15rem;
+        color: var(--color-miam);
+        animation: blink 0.8s infinite;
+      }
+
+    </style>
+  </head>
+
+  <body class="min-h-full bg-stone-950 text-stone-100 antialiased">
+    <div
+      class="pointer-events-none fixed inset-0
+             bg-[radial-gradient(circle_at_top_left,rgba(255,107,53,0.15),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(251,191,36,0.08),transparent_30%)]"
+    ></div>
+
+    <main class="relative mx-auto flex min-h-screen max-w-5xl flex-col px-5 py-8 sm:px-8">
+      <header class="mb-12 flex items-center justify-between">
+        <a href="/" class="group flex items-center gap-3">
+          <span
+            class="grid size-11 place-items-center rounded-2xl
+                   bg-miam text-xl shadow-lg shadow-orange-950/40
+                   transition-transform group-hover:-rotate-6"
+            aria-hidden="true"
+          >
+            🍲
+          </span>
+
+          <span>
+            <span class="block text-xl font-bold tracking-tight">Miam</span>
+            <span class="block text-xs text-stone-500">Assistant culinaire</span>
+          </span>
+        </a>
+
+        <span
+          class="rounded-full border border-emerald-900/60 bg-emerald-950/30
+                 px-3 py-1.5 text-xs font-medium text-emerald-400"
+        >
+          <span class="mr-1 inline-block size-1.5 rounded-full bg-emerald-400"></span>
+          Agent disponible
+        </span>
+      </header>
+
+      <section class="mx-auto w-full max-w-3xl">
+        <div class="mb-9 text-center">
+          <p class="mb-3 text-sm font-semibold uppercase tracking-[0.22em] text-orange-400">
+            Cuisine plus intelligente
+          </p>
+
+          <h1 class="text-balance text-4xl font-bold tracking-tight sm:text-6xl">
+            Qu’est-ce qu’on
+            <span class="text-miam">mange</span> ?
+          </h1>
+
+          <p class="mx-auto mt-5 max-w-2xl text-pretty text-base leading-7 text-stone-400 sm:text-lg">
+            Décris une envie, un ingrédient ou une contrainte. Miam construit une
+            proposition adaptée et évalue son impact.
+          </p>
+        </div>
+
+        <form
+          id="recipe-form"
+          class="rounded-3xl border border-white/10 bg-white/[0.045]
+                 p-3 shadow-2xl shadow-black/30 backdrop-blur"
+        >
+          <label for="prompt" class="sr-only">
+            Décris ce que tu souhaites manger
+          </label>
+
+          <textarea
+            id="prompt"
+            name="prompt"
+            rows="4"
+            required
+            autofocus
+            placeholder="Ex. Un dîner végétarien, réconfortant, avec des légumes de saison…"
+            class="block w-full resize-none rounded-2xl border-0 bg-transparent
+                   px-4 py-4 text-base leading-7 text-white outline-none
+                   placeholder:text-stone-600 focus:ring-0 sm:text-lg"
+          ></textarea>
+
+          <div class="flex items-center justify-between gap-4 border-t border-white/8 px-2 pt-3">
+            <p class="hidden text-xs text-stone-600 sm:block">
+              La génération peut prendre quelques secondes
+            </p>
+
+            <button
+              id="submit-button"
+              type="submit"
+              class="ml-auto inline-flex min-w-38 items-center justify-center gap-2
+                     rounded-xl bg-miam px-5 py-3 text-sm font-semibold text-white
+                     shadow-lg shadow-orange-950/40 transition
+                     hover:bg-miam-dark focus:outline-none focus:ring-2
+                     focus:ring-orange-400 focus:ring-offset-2
+                     focus:ring-offset-stone-950 disabled:cursor-wait disabled:opacity-70"
+            >
+              <span class="idle-label">
+                Générer <span aria-hidden="true">→</span>
+              </span>
+
+              <span class="loading-label hidden items-center gap-2">
+                <svg
+                  class="size-4 animate-spin"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="9"
+                    stroke="currentColor"
+                    stroke-width="3"
+                  ></circle>
+
+                  <path
+                    class="opacity-90"
+                    fill="currentColor"
+                    d="M21 12a9 9 0 0 0-9-9v3a6 6 0 0 1 6 6h3Z"
+                  ></path>
+                </svg>
+
+                Préparation…
+              </span>
+            </button>
+          </div>
+        </form>
+
+        <div
+          id="result"
+          class="mt-7 hidden"
+          aria-live="polite"
+          aria-atomic="false"
+        >
+          <article
+            class="overflow-hidden rounded-3xl border border-white/10
+                   bg-white/[0.045] shadow-2xl shadow-black/20"
+          >
+            <header
+              class="flex items-center justify-between
+                     border-b border-white/8 px-5 py-4"
+            >
+              <div class="flex items-center gap-3">
+                <span
+                  class="grid size-9 place-items-center rounded-xl
+                         bg-orange-500/15 text-lg"
+                  aria-hidden="true"
+                >
+                  🍽️
+                </span>
+
+                <div>
+                  <h2 class="text-sm font-semibold text-stone-100">
+                    Proposition de Miam
+                  </h2>
+
+                  <p id="result-status" class="text-xs text-stone-500">
+                    Préparation en cours…
+                  </p>
+                </div>
+              </div>
+
+              <span
+                id="result-badge"
+                class="rounded-full border border-orange-500/20
+                       bg-orange-500/10 px-2.5 py-1
+                       text-xs font-medium text-orange-300"
+              >
+                En cours
+              </span>
+            </header>
+
+            <pre
+              id="result-content"
+              class="overflow-x-auto whitespace-pre-wrap break-words
+                     p-5 font-mono text-sm leading-7 text-stone-300 sm:p-7"
+            ></pre>
+          </article>
+        </div>
+
+        <div class="mt-8 flex flex-wrap justify-center gap-2">
+          <button
+            type="button"
+            class="rounded-full border border-white/8 bg-white/[0.035]
+                   px-4 py-2 text-xs text-stone-400 transition
+                   hover:border-orange-500/30 hover:text-orange-300"
+            onclick="document.querySelector('#prompt').value = 'Un dîner végétarien rapide pour deux personnes'"
+          >
+            🌱 Dîner végétarien
+          </button>
+
+          <button
+            type="button"
+            class="rounded-full border border-white/8 bg-white/[0.035]
+                   px-4 py-2 text-xs text-stone-400 transition
+                   hover:border-orange-500/30 hover:text-orange-300"
+            onclick="document.querySelector('#prompt').value = 'Une recette avec ce qu’il reste dans mon frigo'"
+          >
+            🧊 Restes du frigo
+          </button>
+
+          <button
+            type="button"
+            class="rounded-full border border-white/8 bg-white/[0.035]
+                   px-4 py-2 text-xs text-stone-400 transition
+                   hover:border-orange-500/30 hover:text-orange-300"
+            onclick="document.querySelector('#prompt').value = 'Un repas gourmand avec un faible impact carbone'"
+          >
+            🌍 Faible impact
+          </button>
+        </div>
+      </section>
+
+      <footer class="mt-auto pt-16 text-center text-xs text-stone-700">
+        Miam peut se tromper. Vérifie les informations importantes.
+      </footer>
+    </main>
+
+    <script>
+      const APP_NAME = "app";
+      const USER_ID_KEY = "miam.user-id";
+      const SESSION_ID_KEY = "miam.session-id";
+
+      const form = document.querySelector("#recipe-form");
+      const promptInput = document.querySelector("#prompt");
+      const submitButton = document.querySelector("#submit-button");
+      const idleLabel = submitButton.querySelector(".idle-label");
+      const loadingLabel = submitButton.querySelector(".loading-label");
+      const result = document.querySelector("#result");
+      const resultStatus = document.querySelector("#result-status");
+      const resultBadge = document.querySelector("#result-badge");
+      const resultContent = document.querySelector("#result-content");
+
+      function getUserId() {
+        let userId = localStorage.getItem(USER_ID_KEY);
+
+        if (!userId) {
+          userId = crypto.randomUUID();
+          localStorage.setItem(USER_ID_KEY, userId);
+        }
+
+        return userId;
+      }
+
+      async function createSession(userId) {
+        const response = await fetch(
+          `/apps/${APP_NAME}/users/${encodeURIComponent(userId)}/sessions`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({}),
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error(`Impossible de créer la session (${response.status})`);
+        }
+
+        const session = await response.json();
+        sessionStorage.setItem(SESSION_ID_KEY, session.id);
+        return session.id;
+      }
+
+      async function getSessionId(userId) {
+        const sessionId = sessionStorage.getItem(SESSION_ID_KEY);
+
+        if (!sessionId) {
+          return createSession(userId);
+        }
+
+        const response = await fetch(
+          `/apps/${APP_NAME}/users/${encodeURIComponent(userId)}/sessions/${encodeURIComponent(sessionId)}`,
+        );
+
+        if (response.ok) {
+          return sessionId;
+        }
+
+        sessionStorage.removeItem(SESSION_ID_KEY);
+        return createSession(userId);
+      }
+
+      function extractText(events) {
+        return events
+          .flatMap((event) => event.content?.parts ?? [])
+          .map((part) => part.text ?? "")
+          .filter(Boolean)
+          .join("");
+      }
+
+      function setLoading(isLoading) {
+        promptInput.disabled = isLoading;
+        submitButton.disabled = isLoading;
+        idleLabel.classList.toggle("hidden", isLoading);
+        loadingLabel.classList.toggle("hidden", !isLoading);
+        loadingLabel.classList.toggle("inline-flex", isLoading);
+      }
+
+      function showPendingResult() {
+        result.classList.remove("hidden");
+        resultStatus.textContent = "Préparation en cours…";
+        resultBadge.textContent = "En cours";
+        resultBadge.className =
+          "rounded-full border border-orange-500/20 bg-orange-500/10 px-2.5 py-1 text-xs font-medium text-orange-300";
+        resultContent.textContent = "Miam réfléchit à ta demande…";
+        resultContent.classList.add("stream-cursor");
+      }
+
+      function showAnswer(text) {
+        resultStatus.textContent = "Génération terminée";
+        resultBadge.textContent = "Terminé";
+        resultBadge.className =
+          "rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400";
+        resultContent.textContent = text;
+        resultContent.classList.remove("stream-cursor");
+      }
+
+      function showError(error) {
+        resultStatus.textContent = "La génération a échoué";
+        resultBadge.textContent = "Erreur";
+        resultBadge.className =
+          "rounded-full border border-red-500/20 bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-400";
+        resultContent.textContent = error.message;
+        resultContent.classList.remove("stream-cursor");
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const prompt = promptInput.value.trim();
+        if (!prompt) return;
+
+        setLoading(true);
+        showPendingResult();
+
+        try {
+          const userId = getUserId();
+          const sessionId = await getSessionId(userId);
+          const response = await fetch("/run", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              app_name: APP_NAME,
+              user_id: userId,
+              session_id: sessionId,
+              new_message: {
+                role: "user",
+                parts: [{ text: prompt }],
+              },
+            }),
+          });
+
+          if (!response.ok) {
+            const body = await response.json().catch(() => ({}));
+            throw new Error(body.detail ?? `Erreur ADK (${response.status})`);
+          }
+
+          const answer = extractText(await response.json());
+          showAnswer(answer || "Miam n’a retourné aucun texte.");
+        } catch (error) {
+          showError(error instanceof Error ? error : new Error(String(error)));
+        } finally {
+          setLoading(false);
+        }
+      });
+    </script>
+  </body>
+</html>
