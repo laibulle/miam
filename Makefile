@@ -4,13 +4,10 @@ sync:
 	uv sync
 
 coverage:
-	uv run pytest \
-		--cov=miam_agent \
-		--cov-report=term-missing \
-		--cov-report=xml:coverage.xml
+	uv run pytest
 
 test:
-	uv run pytest
+	uv run pytest --no-cov
 
 dev:
 	uv run fastapi dev
