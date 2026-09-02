@@ -1,5 +1,7 @@
 # Miam
 
+[![codecov](https://codecov.io/github/laibulle/miam/graph/badge.svg?token=37WFH88IPK)](https://codecov.io/github/laibulle/miam)
+
 Miam is a tool that help you find a meal recipe according to your tastes, diet, 
 location and the current season.
 

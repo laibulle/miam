@@ -14,6 +14,6 @@ RUN uv sync --locked
 
 ENV PATH="/opt/app/.venv/bin:$PATH"
 
-EXPOSE 80
+EXPOSE 8080
 
-CMD ["fastapi", "run", "--proxy-headers", "--port", "80"]
+CMD ["fastapi", "run", "--proxy-headers", "--port", "8080"]
