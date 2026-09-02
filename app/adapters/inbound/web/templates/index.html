@@ -11,12 +11,6 @@
     <!-- Pratique en développement ; à compiler pour la production -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
-    <script
-      src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js"
-      integrity="sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V"
-      crossorigin="anonymous"
-    ></script>
-
     <style type="text/tailwindcss">
       @theme {
         --color-miam: #ff6b35;
@@ -35,13 +29,6 @@
         animation: blink 0.8s infinite;
       }
 
-      .htmx-request .idle-label {
-        display: none;
-      }
-
-      .htmx-request .loading-label {
-        display: inline-flex;
-      }
     </style>
   </head>
 
@@ -96,13 +83,9 @@
         </div>
 
         <form
+          id="recipe-form"
           class="rounded-3xl border border-white/10 bg-white/[0.045]
                  p-3 shadow-2xl shadow-black/30 backdrop-blur"
-          hx-post="/generate"
-          hx-target="#result"
-          hx-swap="innerHTML"
-          hx-disabled-elt="button, textarea"
-          hx-indicator="#submit-button"
         >
           <label for="prompt" class="sr-only">
             Décris ce que tu souhaites manger
@@ -170,10 +153,55 @@
 
         <div
           id="result"
-          class="mt-7"
+          class="mt-7 hidden"
           aria-live="polite"
           aria-atomic="false"
-        ></div>
+        >
+          <article
+            class="overflow-hidden rounded-3xl border border-white/10
+                   bg-white/[0.045] shadow-2xl shadow-black/20"
+          >
+            <header
+              class="flex items-center justify-between
+                     border-b border-white/8 px-5 py-4"
+            >
+              <div class="flex items-center gap-3">
+                <span
+                  class="grid size-9 place-items-center rounded-xl
+                         bg-orange-500/15 text-lg"
+                  aria-hidden="true"
+                >
+                  🍽️
+                </span>
+
+                <div>
+                  <h2 class="text-sm font-semibold text-stone-100">
+                    Proposition de Miam
+                  </h2>
+
+                  <p id="result-status" class="text-xs text-stone-500">
+                    Préparation en cours…
+                  </p>
+                </div>
+              </div>
+
+              <span
+                id="result-badge"
+                class="rounded-full border border-orange-500/20
+                       bg-orange-500/10 px-2.5 py-1
+                       text-xs font-medium text-orange-300"
+              >
+                En cours
+              </span>
+            </header>
+
+            <pre
+              id="result-content"
+              class="overflow-x-auto whitespace-pre-wrap break-words
+                     p-5 font-mono text-sm leading-7 text-stone-300 sm:p-7"
+            ></pre>
+          </article>
+        </div>
 
         <div class="mt-8 flex flex-wrap justify-center gap-2">
           <button
@@ -212,5 +240,154 @@
         Miam peut se tromper. Vérifie les informations importantes.
       </footer>
     </main>
+
+    <script>
+      const APP_NAME = "app";
+      const USER_ID_KEY = "miam.user-id";
+      const SESSION_ID_KEY = "miam.session-id";
+
+      const form = document.querySelector("#recipe-form");
+      const promptInput = document.querySelector("#prompt");
+      const submitButton = document.querySelector("#submit-button");
+      const idleLabel = submitButton.querySelector(".idle-label");
+      const loadingLabel = submitButton.querySelector(".loading-label");
+      const result = document.querySelector("#result");
+      const resultStatus = document.querySelector("#result-status");
+      const resultBadge = document.querySelector("#result-badge");
+      const resultContent = document.querySelector("#result-content");
+
+      function getUserId() {
+        let userId = localStorage.getItem(USER_ID_KEY);
+
+        if (!userId) {
+          userId = crypto.randomUUID();
+          localStorage.setItem(USER_ID_KEY, userId);
+        }
+
+        return userId;
+      }
+
+      async function createSession(userId) {
+        const response = await fetch(
+          `/apps/${APP_NAME}/users/${encodeURIComponent(userId)}/sessions`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({}),
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error(`Impossible de créer la session (${response.status})`);
+        }
+
+        const session = await response.json();
+        sessionStorage.setItem(SESSION_ID_KEY, session.id);
+        return session.id;
+      }
+
+      async function getSessionId(userId) {
+        const sessionId = sessionStorage.getItem(SESSION_ID_KEY);
+
+        if (!sessionId) {
+          return createSession(userId);
+        }
+
+        const response = await fetch(
+          `/apps/${APP_NAME}/users/${encodeURIComponent(userId)}/sessions/${encodeURIComponent(sessionId)}`,
+        );
+
+        if (response.ok) {
+          return sessionId;
+        }
+
+        sessionStorage.removeItem(SESSION_ID_KEY);
+        return createSession(userId);
+      }
+
+      function extractText(events) {
+        return events
+          .flatMap((event) => event.content?.parts ?? [])
+          .map((part) => part.text ?? "")
+          .filter(Boolean)
+          .join("");
+      }
+
+      function setLoading(isLoading) {
+        promptInput.disabled = isLoading;
+        submitButton.disabled = isLoading;
+        idleLabel.classList.toggle("hidden", isLoading);
+        loadingLabel.classList.toggle("hidden", !isLoading);
+        loadingLabel.classList.toggle("inline-flex", isLoading);
+      }
+
+      function showPendingResult() {
+        result.classList.remove("hidden");
+        resultStatus.textContent = "Préparation en cours…";
+        resultBadge.textContent = "En cours";
+        resultBadge.className =
+          "rounded-full border border-orange-500/20 bg-orange-500/10 px-2.5 py-1 text-xs font-medium text-orange-300";
+        resultContent.textContent = "Miam réfléchit à ta demande…";
+        resultContent.classList.add("stream-cursor");
+      }
+
+      function showAnswer(text) {
+        resultStatus.textContent = "Génération terminée";
+        resultBadge.textContent = "Terminé";
+        resultBadge.className =
+          "rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400";
+        resultContent.textContent = text;
+        resultContent.classList.remove("stream-cursor");
+      }
+
+      function showError(error) {
+        resultStatus.textContent = "La génération a échoué";
+        resultBadge.textContent = "Erreur";
+        resultBadge.className =
+          "rounded-full border border-red-500/20 bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-400";
+        resultContent.textContent = error.message;
+        resultContent.classList.remove("stream-cursor");
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const prompt = promptInput.value.trim();
+        if (!prompt) return;
+
+        setLoading(true);
+        showPendingResult();
+
+        try {
+          const userId = getUserId();
+          const sessionId = await getSessionId(userId);
+          const response = await fetch("/run", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              app_name: APP_NAME,
+              user_id: userId,
+              session_id: sessionId,
+              new_message: {
+                role: "user",
+                parts: [{ text: prompt }],
+              },
+            }),
+          });
+
+          if (!response.ok) {
+            const body = await response.json().catch(() => ({}));
+            throw new Error(body.detail ?? `Erreur ADK (${response.status})`);
+          }
+
+          const answer = extractText(await response.json());
+          showAnswer(answer || "Miam n’a retourné aucun texte.");
+        } catch (error) {
+          showError(error instanceof Error ? error : new Error(String(error)));
+        } finally {
+          setLoading(false);
+        }
+      });
+    </script>
   </body>
 </html>
