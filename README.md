@@ -27,7 +27,8 @@ __ What don't we know ?__
 - [x] Setup Dockerfile
 - [x] Define UI
 - [x] Define data structures 
-- [ ] Implement naive agent with eval
+- [x] Implement naive agent
+- [ ] Add Eval
 - [ ] Define guardrails
 - [ ] Define tools
 - [ ] Implement naive agent with tools and eval
