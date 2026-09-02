@@ -2,4 +2,4 @@
 dist
 .coverage
 
-src/miam_agent/.venv
+app/.venv

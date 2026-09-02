@@ -13,7 +13,7 @@ dev:
 	uv run fastapi dev
 
 run-agent:
-	uv run adk run src/miam_agent
+	uv run adk run app
 
 
 docker-build:

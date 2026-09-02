@@ -2,7 +2,9 @@ import httpx
 import pytest
 from pytest_httpx import HTTPXMock
 
-from miam_agent.adapters.out.food_repository.impactco2_food_repository import Impactco2FoodRepository
+from app.adapters.outbound.food_repository.impactco2_food_repository import (
+    Impactco2FoodRepository,
+)
 
 @pytest.mark.asyncio
 async def test_calories_per_serving(httpx_mock: HTTPXMock):
