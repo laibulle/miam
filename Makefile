@@ -1,7 +1,7 @@
 IMAGE_NAME=laibulle/miam:latest
 
-init:
-	uv init
+sync:
+	uv sync
 
 coverage:
 	uv run pytest --cov=miam_agent tests/
