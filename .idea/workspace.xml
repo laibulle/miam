@@ -28,6 +28,8 @@
       <change beforePath="$PROJECT_DIR$/src/miam_agent/application/ports/repositories/foods_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/application/ports/repositories/foods_repository.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/unit/adapters/food_repository/test_impactco2_food_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/unit/adapters/food_repository/test_impactco2_food_repository.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/uv.lock" beforeDir="false" afterPath="$PROJECT_DIR$/uv.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/test.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/test.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
