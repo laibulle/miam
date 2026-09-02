@@ -21,3 +21,11 @@ dev = [
 
 [tool.fastapi]
 entrypoint = "miam_agent.adapters.in.web.app:app"
+
+[tool.pytest.ini_options]
+addopts = [
+    "--cov=miam_agent",
+    "--cov-report=term-missing",
+    "--cov-report=xml:coverage.xml",
+    "--cov-fail-under=40",
+]
