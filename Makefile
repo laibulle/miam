@@ -20,6 +20,6 @@ docker-build:
 	docker build -t ${IMAGE_NAME} .
 
 docker-run:
-	docker run --rm -it -p 8000:80 ${IMAGE_NAME}
+	docker run --rm -it -p 8080:8080 ${IMAGE_NAME}
 
 .PHONY: coverage test run-agent
