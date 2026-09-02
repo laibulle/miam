@@ -1,0 +1,5 @@
+.venv
+dist
+.coverage
+
+src/miam_agent/.venv
