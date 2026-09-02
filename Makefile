@@ -4,7 +4,10 @@ sync:
 	uv sync
 
 coverage:
-	uv run pytest --cov=miam_agent tests/
+	uv run pytest \
+		--cov=miam_agent \
+		--cov-report=term-missing \
+		--cov-report=xml:coverage.xml
 
 test:
 	uv run pytest
