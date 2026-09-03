@@ -5,9 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9e564fdd-338d-48bc-8c30-eedf18de3c3d" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/adapters/inbound/web/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/adapters/inbound/web/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/adapters/outbound/food_repository/impactco2_food_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/adapters/outbound/food_repository/impactco2_food_repository.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/agent.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/application/ports/repositories/foods_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/application/ports/repositories/foods_repository.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/domain/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/domain/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/unit/adapters/food_repository/test_impactco2_food_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/unit/adapters/food_repository/test_impactco2_food_repository.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/unit/domain/test_prompt_input.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/unit/domain/test_prompt_input.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/unit/domain/test_recipe_json_schema.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/unit/domain/test_recipe_json_schema.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/uv.lock" beforeDir="false" afterPath="$PROJECT_DIR$/uv.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,21 +42,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "main",
-    "htmx.bundled.context.provider.enabled": "true",
-    "last_opened_file_path": "/Users/guillaumebailleul/Perso/Pets/marco/app",
-    "node.js.detected.package.jshint": "true",
-    "node.js.selected.package.jshint": "",
-    "nodejs_package_manager_path": "npm"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;htmx.bundled.context.provider.enabled&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/guillaumebailleul/Perso/Pets/marco/app&quot;,
+    &quot;node.js.detected.package.jshint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.jshint&quot;: &quot;&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/app" />
