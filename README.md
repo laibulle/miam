@@ -42,3 +42,19 @@ make dev
 - [ ] Implement naive agent with tools and eval
 - [ ] Implement multiple agents with tools and eval
 - [ ] Setup cloudrun
+
+__Sample for for adk web__
+
+```json
+{
+  "prompt": "Create a healthy seasonal dinner recipe",
+  "activity_level": 2,
+  "age": 35,
+  "gender": "male",
+  "height_cm": 180,
+  "weight_kg": 75,
+  "sports": ["running", "cycling"],
+  "country": "France",
+  "month": 9
+}
+```

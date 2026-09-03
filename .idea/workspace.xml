@@ -5,12 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9e564fdd-338d-48bc-8c30-eedf18de3c3d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/app/tools/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/tools/get_foods_from_season_tool.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/adapters/outbound/food_repository/impactco2_food_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/adapters/outbound/food_repository/impactco2_food_repository.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/agent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/unit/adapters/food_repository/test_impactco2_food_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/unit/adapters/food_repository/test_impactco2_food_repository.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/tools/get_foods_from_season_tool.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/tools/get_foods_from_season_tool.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,21 +34,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;htmx.bundled.context.provider.enabled&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/guillaumebailleul/Perso/Pets/marco/app&quot;,
-    &quot;node.js.detected.package.jshint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.jshint&quot;: &quot;&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "feat/add__get__food__tool",
+    "htmx.bundled.context.provider.enabled": "true",
+    "last_opened_file_path": "/Users/guillaumebailleul/Perso/Pets/marco/app",
+    "node.js.detected.package.jshint": "true",
+    "node.js.selected.package.jshint": "",
+    "nodejs_package_manager_path": "npm"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/app" />
