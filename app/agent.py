@@ -2,12 +2,12 @@ from google.adk.agents.llm_agent import Agent
 
 from app.domain.models import PromptInput, RecipeResponse
 
-MODEL_NAME = 'gemini-3.5-flash-lite'
+MODEL_NAME = "gemini-3.5-flash-lite"
 
 root_agent = Agent(
     model=MODEL_NAME,
-    name='root_agent',
-    description='A naive recipe finder agent.',
+    name="root_agent",
+    description="A naive recipe finder agent.",
     output_schema=RecipeResponse,
     input_schema=PromptInput,
     instruction="""

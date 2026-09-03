@@ -1,5 +1,4 @@
 from pydantic import BaseModel, Field, model_validator
-from typing import List, Optional
 
 
 class Recipe(BaseModel):
@@ -8,8 +7,8 @@ class Recipe(BaseModel):
     cooking_duration_minutes: int
     description: str
     servings: int
-    ingredients: List[Ingredient]
-    steps: List[RecipeStep]
+    ingredients: list[Ingredient]
+    steps: list[RecipeStep]
     energy100: int
     fat100: int
     carb100: int
@@ -18,7 +17,7 @@ class Recipe(BaseModel):
 
 class RecipeStep(BaseModel):
     content: str
-    duration: Optional[int]
+    duration: int | None
 
 
 class Ingredient(BaseModel):
@@ -34,19 +33,18 @@ class PromptInput(BaseModel):
     gender: str
     height_cm: int
     weight_kg: int
-    sports: List[str]
+    sports: list[str]
     country: str
     month: int
 
+
 class RecipeResponse(BaseModel):
-    success: bool = Field(
-        description="Whether a recipe was successfully generated."
-    )
-    recipe: Optional[Recipe] = Field(
+    success: bool = Field(description="Whether a recipe was successfully generated.")
+    recipe: Recipe | None = Field(
         default=None,
         description="The generated recipe. Required when success is true.",
     )
-    description: Optional[str] = Field(
+    description: str | None = Field(
         default=None,
         description="A user-facing error description. Required when success is false.",
     )

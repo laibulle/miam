@@ -2,6 +2,7 @@ import httpx
 
 BASE_URL = "https://impactco2.fr/api/v1/fruitsetlegumes?month="
 
+
 class Impactco2FoodRepository:
     def __init__(self, client: httpx.AsyncClient):
         self.client = client
