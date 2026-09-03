@@ -6,9 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="9e564fdd-338d-48bc-8c30-eedf18de3c3d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/agent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/tools/get_foods_from_season_tool.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/tools/get_foods_from_season_tool.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,7 +39,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "feat/add__get__food__tool",
+    "git-widget-placeholder": "feat/multi__agent",
     "htmx.bundled.context.provider.enabled": "true",
     "last_opened_file_path": "/Users/guillaumebailleul/Perso/Pets/marco/app",
     "node.js.detected.package.jshint": "true",
