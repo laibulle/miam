@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, model_validator
 from typing import List, Optional
 
 
@@ -37,3 +37,31 @@ class PromptInput(BaseModel):
     sports: List[str]
     country: str
     month: int
+
+class RecipeResponse(BaseModel):
+    success: bool = Field(
+        description="Whether a recipe was successfully generated."
+    )
+    recipe: Optional[Recipe] = Field(
+        default=None,
+        description="The generated recipe. Required when success is true.",
+    )
+    description: Optional[str] = Field(
+        default=None,
+        description="A user-facing error description. Required when success is false.",
+    )
+
+    @model_validator(mode="after")
+    def validate_result(self):
+        if self.success:
+            if self.recipe is None:
+                raise ValueError("recipe is required when success is true")
+            if self.description is not None:
+                raise ValueError("description must be omitted when success is true")
+        else:
+            if self.recipe is not None:
+                raise ValueError("recipe must be omitted when success is false")
+            if not self.description or not self.description.strip():
+                raise ValueError("description is required when success is false")
+
+        return self

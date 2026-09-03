@@ -630,21 +630,35 @@
           .join("");
       }
 
-      function parseRecipe(text) {
+      function parseRecipeResponse(text) {
         const normalized = text
           .trim()
           .replace(/^```(?:json)?\s*/i, "")
           .replace(/\s*```$/, "");
-        const recipe = JSON.parse(normalized);
+        const recipeResponse = JSON.parse(normalized);
 
         if (
+          !recipeResponse ||
+          typeof recipeResponse !== "object" ||
+          typeof recipeResponse.success !== "boolean"
+        ) {
+          throw new Error("The response does not match the expected result format.");
+        }
+
+        if (!recipeResponse.success) {
+          throw new Error(
+            recipeResponse.description || "Miam could not generate a recipe.",
+          );
+        }
+
+        const recipe = recipeResponse.recipe;
+        if (
           !recipe ||
-          typeof recipe !== "object" ||
           typeof recipe.name !== "string" ||
           !Array.isArray(recipe.ingredients) ||
           !Array.isArray(recipe.steps)
         ) {
-          throw new Error("The response does not match the expected recipe format.");
+          throw new Error("The successful response does not contain a valid recipe.");
         }
 
         return recipe;
@@ -773,7 +787,7 @@
             throw new Error("Miam did not return a recipe.");
           }
 
-          showRecipe(parseRecipe(answer));
+          showRecipe(parseRecipeResponse(answer));
         } catch (error) {
           showError(error instanceof Error ? error : new Error(String(error)));
         } finally {
