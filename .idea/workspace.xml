@@ -5,18 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9e564fdd-338d-48bc-8c30-eedf18de3c3d" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/adapters/inbound/web/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/adapters/inbound/web/app.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/tools/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/tools/get_foods_from_season_tool.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/adapters/outbound/food_repository/impactco2_food_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/adapters/outbound/food_repository/impactco2_food_repository.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/agent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/application/ports/repositories/foods_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/application/ports/repositories/foods_repository.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/domain/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/domain/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/unit/adapters/food_repository/test_impactco2_food_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/unit/adapters/food_repository/test_impactco2_food_repository.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/unit/domain/test_prompt_input.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/unit/domain/test_prompt_input.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/unit/domain/test_recipe_json_schema.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/unit/domain/test_recipe_json_schema.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/uv.lock" beforeDir="false" afterPath="$PROJECT_DIR$/uv.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
