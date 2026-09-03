@@ -1,6 +1,7 @@
 from google.adk.agents.llm_agent import Agent
 
 from app.domain.models import PromptInput, RecipeResponse
+from app.tools.get_foods_from_season_tool import get_foods_from_season_tool
 
 MODEL_NAME = "gemini-3.5-flash-lite"
 
@@ -13,7 +14,8 @@ root_agent = Agent(
     instruction="""
     Your are a nutrition specialist, you are an excellent cooker and know any recipe of any kind of food.
     You can compute food facts of your recipes.
-    Provide a recipe to the user according to it requirements.
+    Provide a recipe to the user according to it requirements and the foods available for the season.
     Return an error if the user input doesn't ask for a recipe.
     """,
+    tools=[get_foods_from_season_tool],
 )
