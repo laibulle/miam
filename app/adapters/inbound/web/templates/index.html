@@ -39,7 +39,7 @@
     ></div>
 
     <main class="relative mx-auto flex min-h-screen max-w-5xl flex-col px-5 py-8 sm:px-8">
-      <header class="mb-12 flex items-center justify-between">
+      <header class="mb-8 flex items-center justify-between">
         <a href="/" class="group flex items-center gap-3">
           <span
             class="grid size-11 place-items-center rounded-2xl
@@ -64,6 +64,160 @@
           Agent online
         </span>
       </header>
+
+      <details
+        open
+        class="group mx-auto mb-12 w-full max-w-4xl overflow-hidden rounded-3xl
+               border border-white/10 bg-white/[0.035] shadow-xl shadow-black/20"
+      >
+        <summary
+          class="flex cursor-pointer list-none items-center justify-between gap-4
+                 px-5 py-4 marker:content-none sm:px-6"
+        >
+          <span class="flex items-center gap-3">
+            <span
+              class="grid size-9 place-items-center rounded-xl bg-orange-500/10 text-base"
+              aria-hidden="true"
+            >
+              ⚙️
+            </span>
+            <span>
+              <span class="block text-sm font-semibold text-stone-100">Your settings</span>
+              <span class="block text-xs text-stone-500">
+                Used to tailor portions and nutrition
+              </span>
+            </span>
+          </span>
+
+          <span
+            class="text-stone-600 transition-transform group-open:rotate-180"
+            aria-hidden="true"
+          >
+           ⌄
+          </span>
+        </summary>
+
+        <div
+          class="grid gap-4 border-t border-white/8 px-5 py-5
+                 sm:grid-cols-2 sm:px-6 lg:grid-cols-4"
+        >
+          <label class="block">
+            <span class="mb-2 block text-xs font-medium text-stone-400">Age</span>
+            <input
+              id="setting-age"
+              name="age"
+              form="recipe-form"
+              type="number"
+              min="1"
+              max="120"
+              step="1"
+              value="30"
+              required
+              class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5
+                     text-sm text-stone-200 outline-none transition
+                     focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/15"
+            />
+          </label>
+
+          <label class="block">
+            <span class="mb-2 block text-xs font-medium text-stone-400">Gender</span>
+            <select
+              id="setting-gender"
+              name="gender"
+              form="recipe-form"
+              required
+              class="w-full rounded-xl border border-white/10 bg-stone-900 px-3 py-2.5
+                     text-sm text-stone-200 outline-none transition
+                     focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/15"
+            >
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+              <option value="non-binary">Non-binary</option>
+              <option value="prefer-not-to-say">Prefer not to say</option>
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="mb-2 block text-xs font-medium text-stone-400">Height</span>
+            <span class="relative block">
+              <input
+                id="setting-height"
+                name="height_cm"
+                form="recipe-form"
+                type="number"
+                min="50"
+                max="250"
+                step="1"
+                value="170"
+                required
+                class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 pr-10
+                       text-sm text-stone-200 outline-none transition
+                       focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/15"
+              />
+              <span class="pointer-events-none absolute inset-y-0 right-3 grid place-items-center text-xs text-stone-600">
+                cm
+              </span>
+            </span>
+          </label>
+
+          <label class="block">
+            <span class="mb-2 block text-xs font-medium text-stone-400">Weight</span>
+            <span class="relative block">
+              <input
+                id="setting-weight"
+                name="weight_kg"
+                form="recipe-form"
+                type="number"
+                min="20"
+                max="400"
+                step="1"
+                value="70"
+                required
+                class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 pr-10
+                       text-sm text-stone-200 outline-none transition
+                       focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/15"
+              />
+              <span class="pointer-events-none absolute inset-y-0 right-3 grid place-items-center text-xs text-stone-600">
+                kg
+              </span>
+            </span>
+          </label>
+
+          <label class="block">
+            <span class="mb-2 block text-xs font-medium text-stone-400">Activity level</span>
+            <select
+              id="setting-activity-level"
+              name="activity_level"
+              form="recipe-form"
+              required
+              class="w-full rounded-xl border border-white/10 bg-stone-900 px-3 py-2.5
+                     text-sm text-stone-200 outline-none transition
+                     focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/15"
+            >
+              <option value="1">1 · Sedentary</option>
+              <option value="2">2 · Lightly active</option>
+              <option value="3" selected>3 · Moderately active</option>
+              <option value="4">4 · Very active</option>
+              <option value="5">5 · Extremely active</option>
+            </select>
+          </label>
+
+          <label class="block sm:col-span-2 lg:col-span-3">
+            <span class="mb-2 block text-xs font-medium text-stone-400">Sports</span>
+            <input
+              id="setting-sports"
+              name="sports"
+              form="recipe-form"
+              type="text"
+              placeholder="Running, cycling, swimming"
+              class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5
+                     text-sm text-stone-200 outline-none transition placeholder:text-stone-700
+                     focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/15"
+            />
+          </label>
+
+        </div>
+      </details>
 
       <section class="mx-auto w-full max-w-3xl">
         <div class="mb-9 text-center">
@@ -406,6 +560,14 @@
       const stepList = document.querySelector("#step-list");
       const ingredientTemplate = document.querySelector("#ingredient-template");
       const stepTemplate = document.querySelector("#step-template");
+      const settingsInputs = {
+        activityLevel: document.querySelector("#setting-activity-level"),
+        age: document.querySelector("#setting-age"),
+        gender: document.querySelector("#setting-gender"),
+        height: document.querySelector("#setting-height"),
+        weight: document.querySelector("#setting-weight"),
+        sports: document.querySelector("#setting-sports"),
+      };
       const numberFormatter = new Intl.NumberFormat("en-GB", {
         maximumFractionDigits: 2,
       });
@@ -488,9 +650,28 @@
         return recipe;
       }
 
+      function getSettings() {
+        return {
+          activity_level: Number(settingsInputs.activityLevel.value),
+          age: Number(settingsInputs.age.value),
+          gender: settingsInputs.gender.value,
+          height_cm: Number(settingsInputs.height.value),
+          weight_kg: Number(settingsInputs.weight.value),
+          sports: settingsInputs.sports.value
+            .split(",")
+            .map((sport) => sport.trim())
+            .filter(Boolean),
+          country: "France",
+          month: new Date().getMonth() + 1,
+        };
+      }
+
       function setLoading(isLoading) {
         promptInput.disabled = isLoading;
         submitButton.disabled = isLoading;
+        Object.values(settingsInputs).forEach((input) => {
+          input.disabled = isLoading;
+        });
         idleLabel.classList.toggle("hidden", isLoading);
         loadingLabel.classList.toggle("hidden", !isLoading);
         loadingLabel.classList.toggle("inline-flex", isLoading);
@@ -566,6 +747,7 @@
         try {
           const userId = getUserId();
           const sessionId = await getSessionId(userId);
+          const settings = getSettings();
           const response = await fetch("/run", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -575,8 +757,9 @@
               session_id: sessionId,
               new_message: {
                 role: "user",
-                parts: [{ text: prompt }],
+                parts: [{ text: JSON.stringify({ prompt, ...settings }) }],
               },
+              state_delta: settings,
             }),
           });
 
