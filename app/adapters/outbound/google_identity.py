@@ -2,19 +2,16 @@
 
 import hashlib
 
-from google.auth.transport.requests import Request as GoogleRequest
 from google.oauth2 import id_token
 
+from app.adapters.outbound.google_keys import CachedGoogleRequest
 
-class BoundedGoogleRequest(GoogleRequest):
-    def __call__(self, *args, **kwargs):
-        kwargs["timeout"] = 5
-        return super().__call__(*args, **kwargs)
+_google_request = CachedGoogleRequest()
 
 
 def verify_google_credential(credential: str, client_id: str) -> str:
     # google-auth verifies signature, issuer, audience and expiry against Google's keys.
-    claims = id_token.verify_oauth2_token(credential, BoundedGoogleRequest(), client_id)
+    claims = id_token.verify_oauth2_token(credential, _google_request, client_id)
     subject = claims.get("sub")
     if not isinstance(subject, str) or not 1 <= len(subject) <= 255:
         raise ValueError("Missing Google subject")

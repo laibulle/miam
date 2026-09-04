@@ -7,7 +7,6 @@ from app.adapters.inbound.web.adk_access import RequireAdkAccount
 from app.adapters.inbound.web.auth import auth_router
 from app.adapters.inbound.web.auth_settings import AuthSettings
 from app.adapters.inbound.web.static_files import ExpoStaticFiles
-from app.adapters.outbound.login_sessions import SessionStore
 
 WEB_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = WEB_DIR.parents[3]
@@ -20,12 +19,9 @@ app = get_fast_api_app(
     allow_origins=list(auth_settings.allowed_origins),
 )
 
-login_sessions = SessionStore(auth_settings.database)
 # Capture every ADK route before adding public sign-in and static assets.
-app.add_middleware(
-    RequireAdkAccount, settings=auth_settings, sessions=login_sessions, routes=list(app.routes)
-)
-app.include_router(auth_router(auth_settings, login_sessions))
+app.add_middleware(RequireAdkAccount, settings=auth_settings, routes=list(app.routes))
+app.include_router(auth_router(auth_settings))
 
 # Mount last so the ADK API and FastAPI documentation keep their routes.
 app.mount(

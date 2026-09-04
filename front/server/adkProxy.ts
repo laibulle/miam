@@ -1,16 +1,16 @@
 // Imported exclusively by Expo's development API routes, never by the client.
 export async function proxyAdk(request: Request): Promise<Response> {
   const path = new URL(request.url).pathname;
-  const allowed = (request.method === 'POST' && (path === '/run' || path === '/auth/google'
+  const allowed = (request.method === 'POST' && (path === '/run'
     || /^\/apps\/[a-zA-Z0-9_-]+\/users\/[a-zA-Z0-9_-]+\/sessions$/.test(path)))
-    || (path === '/auth/session' && ['GET', 'DELETE'].includes(request.method));
+    || (path === '/auth/me' && request.method === 'GET');
   if (!allowed) {
     return new Response(null, { status: 404 });
   }
   const baseUrl = (process.env.ADK_API_URL ?? 'http://127.0.0.1:8000').replace(/\/$/, '');
   try {
     const headers: Record<string, string> = {};
-    for (const name of ['content-type', 'cookie', 'origin', 'x-requested-with']) {
+    for (const name of ['content-type', 'authorization']) {
       const value = request.headers.get(name);
       if (value) headers[name] = value;
     }
@@ -25,7 +25,6 @@ export async function proxyAdk(request: Request): Promise<Response> {
       'Content-Type': response.headers.get('Content-Type') ?? 'application/json',
       'Cache-Control': 'no-store',
     });
-    for (const cookie of response.headers.getSetCookie()) responseHeaders.append('Set-Cookie', cookie);
     return new Response(response.body, {
       status: response.status,
       headers: responseHeaders,

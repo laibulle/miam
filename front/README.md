@@ -52,54 +52,60 @@ adapter, without an additional package.
 3. Copy `.env.example` to `.env.local` and fill in
    `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`. This ID is public; never include a client
    secret. `autoDetect` does not work in a browser.
-4. The backend login route is fixed at `POST /auth/google`. Restart Expo after
+4. The identity check route is fixed at `GET /auth/me`. Restart Expo after
    changing its public client ID.
 5. Configure the backend in `app/.env` (or container environment):
 
    ```dotenv
    GOOGLE_WEB_CLIENT_ID=<same Web client ID as Expo>
    AUTH_ALLOWED_ORIGINS=http://localhost:8081,http://localhost:8000,http://localhost:8080
-   AUTH_COOKIE_SECURE=false
-   AUTH_SESSION_DB=.adk/auth.sqlite3
    ```
 
-   `AUTH_COOKIE_SECURE=false` is for local HTTP only. Production uses HTTPS,
-   `AUTH_COOKIE_SECURE=true` (the default), and the exact public origins in
-   `AUTH_ALLOWED_ORIGINS`. No client secret or session signing key is needed.
-   Missing backend configuration leaves login unavailable (503).
+   Use HTTPS in production. `AUTH_ALLOWED_ORIGINS` controls CORS; it does not
+   authenticate requests. No client secret or session signing key is needed.
+   Missing backend client ID leaves authenticated requests unavailable (503).
 
-### Implemented session API
+### Bearer authentication
 
-- `POST /auth/google`: JSON `{ "credential": "<Google ID token>" }`, with the
-  browser's `Origin` and `X-Requested-With: Miam`. The server checks the origin,
-  verifies the signature, issuer, audience and expiry using google-auth, creates
-  an opaque session, and returns **204** with an HttpOnly, SameSite=Lax cookie
-  (Secure and `__Host-` prefixed in production).
-- `GET /auth/session`: returns `{ "user_id": "google-..." }` for a valid cookie,
-  otherwise **401**. The frontend uses this identity for default ADK requests.
-- `DELETE /auth/session`: requires the same origin/custom header checks, revokes
-  the session and clears the cookie.
+1. The Google button returns an ID token. The frontend sends it to `GET /auth/me`
+   in `Authorization: Bearer <Google ID token>`.
+2. Python verifies the signature, issuer, audience and expiry with `google-auth`
+   and returns `{ "user_id": "google-..." }`. This does not create a login session.
+3. The frontend keeps the token and verified user ID **in memory only**, and sends
+   the bearer header on both standard ADK calls: session creation and `/run`.
+4. Python verifies the token on **every request**, then checks that the ADK
+   `user_id` matches the Google identity. Expired/invalid tokens receive **401**;
+   another user's resources and ADK administrative/debug routes receive **403**.
 
-Sessions expire after eight hours. Only hashes of random session tokens and the
-account identifier are stored in SQLite; Google tokens are not persisted. A new
-login rotates the current session. Workers on the same host must share this
-SQLite file; separate replicas need a shared session store before scaling out.
+Google's public certificates are cached per worker for up to five minutes,
+respecting their HTTP `max-age` and `Age` headers. User tokens and validation
+results are never cached. Key fetches have a five-second timeout; a network
+failure without usable cached keys returns **503**.
 
-An account is required: `/profile`, `/home` and `/recipe` remain protected by
-Expo Router. There is no guest flow. The backend also rejects anonymous ADK API
-requests. The existing `/run`, `/run_sse` and per-user session routes retain their
-ADK protocol, and the authenticated account must match `user_id` in the path or
-body. Other ADK administrative/debug endpoints and live WebSocket execution are
-not exposed to users. Static pages/assets and the sign-in routes stay reachable.
+The backend has no login-session database, login cookies or CSRF cookie checks.
+Authentication is supplied explicitly in the bearer header, never by a cookie or
+query parameter. Old login cookies are ignored, and the previous `/auth/google`
+and `/auth/session` routes have been removed. Existing ADK conversation sessions
+and their `google-...` owner identifiers are preserved.
 
-The frontend login flag is still in memory: reloading requires signing in again;
-`GET /auth/session` is available for a future automatic restoration flow. A failed
-or expired server session cannot generate recipes, even if the page is still open.
+An account remains required for `/profile`, `/home` and `/recipe`. With the
+current Google button integration, there is no automatic token renewal: when an
+API call receives **401**, the frontend discards the token and returns to sign-in.
+Google ID tokens expire after about one hour. Reloading the page also requires
+sign-in because the token is not persisted.
 
-Expo's development API routes forward authentication and ADK requests, including
-cookies and the browser's original origin. Login `Set-Cookie` headers are preserved.
-These proxy routes are excluded from the static export: Docker serves the same
-paths directly from FastAPI.
+The profile includes a logout button. Logout discards the local token and clears
+private profile/recipe state, including pending recipe requests. It does not
+revoke the Google token: a copy remains usable until expiry.
+
+`auth.py` handles bearer verification and the identity route; `adk_access.py`
+handles access to ADK resources; `google_identity.py` delegates token validation
+to Google; `google_keys.py` caches only public keys. Configuration remains in
+`auth_settings.py`. No Firebase or additional dependency is required.
+
+Expo's development proxy forwards the same bearer header to FastAPI and does
+not forward login cookies. Production requests go directly to FastAPI through
+the same paths. ADK live WebSockets remain unavailable.
 
 ### Docker configuration
 
@@ -112,16 +118,14 @@ docker build \
   -t miam .
 ```
 
-Pass the backend variables at runtime, and persist the session database:
+Pass the backend variables at runtime:
 
 ```bash
-docker run --rm -p 8080:8080 --env-file app/.env \
-  -v miam-auth:/opt/app/.adk miam
+docker run --rm -p 8080:8080 --env-file app/.env miam
 ```
 
-Set the local HTTP cookie option when testing this container on localhost;
-production requires secure cookies and an HTTPS origin. `make docker-build`
-forwards the public Google client ID from your shell environment.
+No login-session volume is required. `make docker-build` forwards the public
+Google client ID from your shell environment.
 
 If the deployment sets CSP, allow the Google SDK and frames as described in
 [Google's setup guide](https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid).

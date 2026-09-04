@@ -5,6 +5,9 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 
 import { colors, fontsToLoad } from '@/components/ui/tokens';
+import { defaultProfile } from '@/domain/profile';
+import { useProfileStore } from '@/features/profile/useProfileStore';
+import { useRecipeGenerationStore } from '@/features/generation/useRecipeGenerationStore';
 import { useAuthStore } from '@/features/auth/useAuthStore';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -12,6 +15,13 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 export default function RootLayout() {
   const [fontsLoaded] = useFonts(fontsToLoad);
   const authenticated = useAuthStore((state) => state.authenticated);
+
+  useEffect(() => useAuthStore.subscribe((state, previous) => {
+    if (state.account !== previous.account) {
+      useProfileStore.setState(defaultProfile);
+      useRecipeGenerationStore.getState().reset();
+    }
+  }), []);
 
   useEffect(() => {
     if (fontsLoaded) {

@@ -1,8 +1,7 @@
 /** @jest-environment node */
 import { POST as runProxy } from '../app/run+api';
 import { POST as sessionProxy } from '../app/apps/[appName]/users/[userId]/sessions+api';
-import { POST as googleProxy } from '../app/auth/google+api';
-import { GET as authSessionProxy } from '../app/auth/session+api';
+import { GET as accountProxy } from '../app/auth/me+api';
 
 describe('ADK development proxy', () => {
   const originalFetch = global.fetch;
@@ -19,42 +18,28 @@ describe('ADK development proxy', () => {
     ['/run', runProxy, '{"app_name":"app","session_id":"s"}', '[{"author":"editor_agent"}]'],
     ['/apps/app/users/web-test/sessions', sessionProxy, '{}', '{"id":"s"}'],
   ] as const)('forwards %s without changing the ADK protocol', async (path, handler, body, result) => {
-    const request = new Request(`http://localhost:8081${path}`, { method: 'POST', body, headers: { 'Content-Type': 'application/json' } });
+    const request = new Request(`http://localhost:8081${path}`, { method: 'POST', body, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer test-token' } });
     const mock = jest.fn().mockResolvedValue(new Response(result, { headers: { 'Content-Type': 'application/json' } }));
     global.fetch = mock;
     const response = await handler(request);
     expect(mock).toHaveBeenCalledTimes(1);
     expect(mock).toHaveBeenCalledWith(`http://127.0.0.1:8000${path}`, {
-      method: 'POST', headers: { 'content-type': 'application/json' }, body, signal: request.signal, redirect: 'error',
+      method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer test-token' }, body, signal: request.signal, redirect: 'error',
     });
     expect(response.status).toBe(200);
     expect(await response.text()).toBe(result);
   });
 
-  it('forwards Google sign-in cookies and the original CSRF headers', async () => {
-    global.fetch = jest.fn().mockResolvedValue(new Response(null, { status: 204, headers: {
-      'Set-Cookie': 'miam_session=test; HttpOnly; Path=/; SameSite=Lax',
-    } }));
-    const response = await googleProxy(new Request('http://localhost:8081/auth/google', {
-      method: 'POST', body: '{"credential":"test"}', headers: {
-        Origin: 'http://localhost:8081', 'X-Requested-With': 'Miam',
-        Cookie: 'miam_session=old', 'Content-Type': 'application/json',
-      },
+  it('forwards bearer credentials without request or response cookies', async () => {
+    global.fetch = jest.fn().mockResolvedValue(new Response('{}', { headers: { 'Set-Cookie': 'legacy=test' } }));
+    const response = await accountProxy(new Request('http://localhost:8081/auth/me', {
+      headers: { Authorization: 'Bearer test-token', Cookie: 'legacy=test' },
     }));
-    expect(response.status).toBe(204);
-    expect(response.headers.get('set-cookie')).toContain('HttpOnly');
-    expect(fetch).toHaveBeenCalledWith('http://127.0.0.1:8000/auth/google', expect.objectContaining({
-      headers: { origin: 'http://localhost:8081', 'x-requested-with': 'Miam', cookie: 'miam_session=old', 'content-type': 'application/json' },
-    }));
-  });
-
-  it('forwards session reads without adding a body or fabricating an origin', async () => {
-    global.fetch = jest.fn().mockResolvedValue(new Response('{}'));
-    await authSessionProxy(new Request('http://localhost:8081/auth/session', { headers: { Cookie: 'miam_session=test' } }));
-    expect(fetch).toHaveBeenCalledWith('http://127.0.0.1:8000/auth/session', expect.objectContaining({
-      method: 'GET', headers: { cookie: 'miam_session=test' },
+    expect(fetch).toHaveBeenCalledWith('http://127.0.0.1:8000/auth/me', expect.objectContaining({
+      method: 'GET', headers: { authorization: 'Bearer test-token' },
     }));
     expect((fetch as jest.Mock).mock.calls[0][1]).not.toHaveProperty('body');
+    expect(response.headers.get('set-cookie')).toBeNull();
   });
 
   it('preserves upstream HTTP errors', async () => {

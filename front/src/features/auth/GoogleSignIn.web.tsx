@@ -2,13 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { mountGoogleSignIn } from '../../adapters/googleIdentity.web';
-import { getGoogleSignInConfig } from '../../adapters/googleSession';
+import { getGoogleSignInConfig } from '../../adapters/googleAuth';
 import { Button } from '../../components/ui/Button/Button';
 import { colors, spacing, typography } from '../../components/ui/tokens';
 import { useAuthStore } from './useAuthStore';
 
 export function GoogleSignIn() {
   const host = useRef<View>(null);
+  const notice = useAuthStore((state) => state.notice);
   const signIn = useAuthStore((state) => state.signIn);
   const [attempt, setAttempt] = useState(0);
   const [status, setStatus] = useState<'loading' | 'ready' | 'verifying' | 'error'>('loading');
@@ -62,6 +63,7 @@ export function GoogleSignIn() {
 
   return (
     <View style={styles.container}>
+      {notice ? <Text accessibilityRole="alert" style={styles.caption}>{notice}</Text> : null}
       <View
         ref={host}
         style={[styles.buttonHost, (status === 'verifying' || status === 'error') && styles.hidden]}

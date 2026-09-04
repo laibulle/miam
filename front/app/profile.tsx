@@ -11,6 +11,7 @@ import { SegmentedControl } from '@/components/ui/SegmentedControl/SegmentedCont
 import { SelectField } from '@/components/ui/SelectField/SelectField';
 import { colors, spacing, typography } from '@/components/ui/tokens';
 import { activityLevelLabels, genderLabels } from '@/domain/profile';
+import { useAuthStore } from '@/features/auth/useAuthStore';
 import { useProfileStore } from '@/features/profile/useProfileStore';
 
 const genderOptions = (Object.keys(genderLabels) as Array<keyof typeof genderLabels>).map((value) => ({
@@ -25,6 +26,7 @@ const extraSportsPool = ['Natation', 'Yoga', 'Vélo', 'Randonnée', 'Danse'];
 export default function ProfileScreen() {
   const router = useRouter();
   const profile = useProfileStore();
+  const signOut = useAuthStore((state) => state.signOut);
 
   const nextSportToAdd = extraSportsPool.find((sport) => !profile.sports.includes(sport));
 
@@ -74,6 +76,7 @@ export default function ProfileScreen() {
       <SelectField label="Pays / région" value={profile.country} options={countryOptions} onChange={profile.setCountry} />
 
       <Button variant="primary" fullWidth label="Continuer" onPress={() => router.push('/home')} />
+      <Button variant="secondary" fullWidth label="Se déconnecter" onPress={() => signOut()} />
     </ScreenContainer>
   );
 }
