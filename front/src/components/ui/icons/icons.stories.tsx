@@ -10,6 +10,7 @@ import {
   FlameIcon,
   HeartIcon,
   MiamMascot,
+  MiamCompanions,
   PauseIcon,
   PlateIcon,
   PlayIcon,
@@ -67,6 +68,14 @@ export const MascotSizes: Story = {
       <MiamMascot size={72} />
       <MiamMascot size={44} />
       <MiamMascot size={22} />
+    </View>
+  ),
+};
+
+export const Companions: Story = {
+  render: () => (
+    <View style={{ alignItems: 'center', backgroundColor: colors.canvas, padding: 24 }}>
+      <MiamCompanions />
     </View>
   ),
 };

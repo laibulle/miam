@@ -1,11 +1,10 @@
 import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors, spacing } from '../tokens';
 
-const MAX_CONTENT_WIDTH = 480;
-const WIDE_BREAKPOINT = 720;
+const MAX_CONTENT_WIDTH = 800;
 
 export interface ScreenContainerProps {
   children: ReactNode;
@@ -16,17 +15,8 @@ export interface ScreenContainerProps {
   gap?: number;
 }
 
-/**
- * Miam's screens were designed as fixed-width mobile frames in Penpot. On a
- * wide (desktop/tablet-web) viewport we keep that same mobile composition
- * intact but just center it in the viewport — same canvas background as the
- * rest of the page, no card/shadow/backdrop framing it, so it reads as
- * centered content rather than a boxed-in mobile widget.
- */
+/** Fluid on mobile, with a wider centered reading column on desktop. */
 export function ScreenContainer({ children, topSlot, variant = 'scroll', gap = spacing.lg }: ScreenContainerProps) {
-  const { width } = useWindowDimensions();
-  const isWide = width >= WIDE_BREAKPOINT;
-
   const content =
     variant === 'center' ? (
       <View style={[styles.inner, styles.innerCentered, { gap }]}>{children}</View>
@@ -42,8 +32,8 @@ export function ScreenContainer({ children, topSlot, variant = 'scroll', gap = s
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-      <View style={[styles.backdrop, isWide && styles.backdropWide]}>
-        <View style={[styles.column, isWide && styles.columnWide]}>
+      <View style={styles.backdrop}>
+        <View style={styles.column}>
           {topSlot ? <View style={styles.topSlot}>{topSlot}</View> : null}
           {content}
         </View>
@@ -59,18 +49,12 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     flex: 1,
-  },
-  backdropWide: {
     alignItems: 'center',
   },
   column: {
     flex: 1,
     width: '100%',
-  },
-  columnWide: {
-    flex: undefined,
-    width: MAX_CONTENT_WIDTH,
-    maxWidth: '100%',
+    maxWidth: MAX_CONTENT_WIDTH,
   },
   topSlot: {
     paddingHorizontal: spacing.xxl,

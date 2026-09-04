@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/ui/Button/Button';
 import { ScreenContainer } from '@/components/ui/ScreenContainer/ScreenContainer';
-import { MiamMascot } from '@/components/ui/icons/icons';
+import { MiamCompanions } from '@/components/ui/icons/icons';
 import { colors, radii, spacing, typography } from '@/components/ui/tokens';
 
 export default function WelcomeScreen() {
@@ -12,10 +12,7 @@ export default function WelcomeScreen() {
   return (
     <ScreenContainer variant="center" gap={spacing.xxl}>
       <View style={styles.illustration}>
-        <View style={styles.circleLarge} />
-        <View style={styles.circleSmall} />
-        <View style={styles.circleAccent} />
-        <MiamMascot size={96} />
+        <MiamCompanions size={260} />
       </View>
 
       <View style={styles.copy}>
@@ -42,35 +39,9 @@ export default function WelcomeScreen() {
 
 const styles = StyleSheet.create({
   illustration: {
-    height: 220,
+    height: 260,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  circleLarge: {
-    position: 'absolute',
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    backgroundColor: colors.sage.tint,
-    left: 10,
-  },
-  circleSmall: {
-    position: 'absolute',
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: colors.gold.tint,
-    right: 20,
-    top: 8,
-  },
-  circleAccent: {
-    position: 'absolute',
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: colors.coral.DEFAULT,
-    left: 30,
-    bottom: 30,
   },
   copy: {
     gap: spacing.md,

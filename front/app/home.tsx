@@ -42,8 +42,8 @@ export default function HomeScreen() {
           <Text style={styles.wordmark}>Miam</Text>
         </View>
         <IconButton
-          icon={<SettingsIcon />}
-          tint={colors.gold.tint}
+          icon={<SettingsIcon size={24} />}
+          variant="plain"
           accessibilityLabel="Réglages"
           onPress={() => router.push('/profile')}
         />

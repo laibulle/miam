@@ -1,4 +1,5 @@
-import { View } from 'react-native';
+import type { ReactNode } from 'react';
+import { View, type ViewStyle } from 'react-native';
 
 import { colors } from '../tokens';
 
@@ -8,276 +9,196 @@ export interface IconProps {
 }
 
 const DEFAULT_SIZE = 20;
+const palette = {
+  apricot: '#FF913F',
+  honey: '#FFCA54',
+  sky: '#80CDE9',
+  rose: '#F5AACB',
+  sage: '#ACCEAD',
+  cocoa: '#553E32',
+  cream: '#FFF8EA',
+};
 
-/**
- * Small, friendly geometric marks built from plain Views — no emoji, no icon
- * font/SVG dependency. Flat solid fills, chunky rounded proportions, closed
- * happy-eye faces on the brand mark — inspired directly by Headspace's blob
- * character system (circle/square/triangle shapes with a simple smile).
- */
-
-/** A closed, happy eye/smile stroke: a circle showing only one colored edge. */
-function Arc({ size, thickness, color, edge }: { size: number; thickness: number; color: string; edge: 'top' | 'bottom' }) {
+// A shared drawing space keeps the rounded strokes consistent on web and native.
+function Canvas({ size, children }: { size: number; children: ReactNode }) {
   return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-        borderWidth: thickness,
-        borderColor: 'transparent',
-        ...(edge === 'top' ? { borderTopColor: color } : { borderBottomColor: color }),
-      }}
-    />
-  );
-}
-
-export function BlobFace({ size = DEFAULT_SIZE, color = colors.ink }: IconProps) {
-  const eyeSize = size * 0.22;
-  const eyeThickness = Math.max(1.5, size * 0.065);
-  const mouthSize = size * 0.4;
-  const mouthThickness = Math.max(1.5, size * 0.07);
-  return (
-    <View style={{ alignItems: 'center' }}>
-      <View style={{ flexDirection: 'row', gap: size * 0.18 }}>
-        <Arc size={eyeSize} thickness={eyeThickness} color={color} edge="top" />
-        <Arc size={eyeSize} thickness={eyeThickness} color={color} edge="top" />
-      </View>
-      <Arc size={mouthSize} thickness={mouthThickness} color={color} edge="bottom" />
-    </View>
-  );
-}
-
-/** The Miam brand mark: a friendly round blob with a closed-eye smile. */
-export function MiamMascot({ size = DEFAULT_SIZE, color = colors.coral.DEFAULT }: IconProps) {
-  return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-        backgroundColor: color,
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <BlobFace size={size} color={colors.onColor} />
-    </View>
-  );
-}
-
-export function BackIcon({ size = DEFAULT_SIZE, color = colors.ink }: IconProps) {
-  return (
-    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-      <View
-        style={{
-          width: 0,
-          height: 0,
-          borderTopWidth: size * 0.24,
-          borderBottomWidth: size * 0.24,
-          borderRightWidth: size * 0.32,
-          borderTopColor: 'transparent',
-          borderBottomColor: 'transparent',
-          borderRightColor: color,
-          marginRight: size * 0.08,
-        }}
-      />
-    </View>
-  );
-}
-
-export function CloseIcon({ size = DEFAULT_SIZE, color = colors.ink }: IconProps) {
-  const barLength = size * 0.62;
-  const barThickness = Math.max(2, size * 0.14);
-  const barStyle = {
-    position: 'absolute' as const,
-    width: barLength,
-    height: barThickness,
-    borderRadius: barThickness / 2,
-    backgroundColor: color,
-  };
-  return (
-    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-      <View style={[barStyle, { transform: [{ rotate: '45deg' }] }]} />
-      <View style={[barStyle, { transform: [{ rotate: '-45deg' }] }]} />
-    </View>
-  );
-}
-
-export function SettingsIcon({ size = DEFAULT_SIZE, color = colors.ink }: IconProps) {
-  const trackWidth = size * 0.78;
-  const trackThickness = Math.max(2.5, size * 0.12);
-  const knobSize = size * 0.3;
-  const track = { width: trackWidth, height: trackThickness, borderRadius: trackThickness / 2, backgroundColor: color, opacity: 0.3 };
-  const knob = {
-    position: 'absolute' as const,
-    width: knobSize,
-    height: knobSize,
-    borderRadius: knobSize / 2,
-    backgroundColor: color,
-    top: -(knobSize - trackThickness) / 2,
-  };
-  return (
-    <View style={{ width: size, height: size, justifyContent: 'center', gap: size * 0.3 }}>
-      <View style={{ width: trackWidth }}>
-        <View style={track} />
-        <View style={[knob, { left: trackWidth * 0.58 }]} />
-      </View>
-      <View style={{ width: trackWidth }}>
-        <View style={track} />
-        <View style={[knob, { left: trackWidth * 0.18 }]} />
+    <View pointerEvents="none" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ width: size, height: size }}>
+      <View style={{ position: 'absolute', width: 100, height: 100, left: (size - 100) / 2, top: (size - 100) / 2, transform: [{ scale: size / 100 }] }}>
+        {children}
       </View>
     </View>
   );
 }
 
-export function HeartIcon({ size = DEFAULT_SIZE, color = colors.coral.DEFAULT }: IconProps) {
-  const lobe = size * 0.52;
+function Shape({ x, y, w, h = w, color, radius = 50, rotate = 0, style }: {
+  x: number; y: number; w: number; h?: number; color: string; radius?: number; rotate?: number; style?: ViewStyle;
+}) {
+  return <View style={{ position: 'absolute', left: x, top: y, width: w, height: h, backgroundColor: color, borderRadius: radius, transform: [{ rotate: `${rotate}deg` }], ...style }} />;
+}
+
+function Stroke({ x, y, length, color, rotate = 0, thickness = 9 }: {
+  x: number; y: number; length: number; color: string; rotate?: number; thickness?: number;
+}) {
+  return <Shape x={x} y={y} w={length} h={thickness} radius={thickness / 2} color={color} rotate={rotate} />;
+}
+
+function Smile({ x, y, w, h, color, thickness = 4 }: {
+  x: number; y: number; w: number; h: number; color: string; thickness?: number;
+}) {
+  return <View style={{ position: 'absolute', left: x, top: y, width: w, height: h, borderColor: color, borderBottomWidth: thickness, borderLeftWidth: thickness, borderRightWidth: thickness, borderBottomLeftRadius: w / 2, borderBottomRightRadius: w / 2 }} />;
+}
+
+function Face({ color = palette.cocoa }: { color?: string }) {
   return (
-    <View style={{ width: size, height: size }}>
-      <View
-        style={{
-          position: 'absolute',
-          width: lobe,
-          height: lobe,
-          borderRadius: lobe / 2,
-          backgroundColor: color,
-          top: 0,
-          left: 0,
-        }}
-      />
-      <View
-        style={{
-          position: 'absolute',
-          width: lobe,
-          height: lobe,
-          borderRadius: lobe / 2,
-          backgroundColor: color,
-          top: 0,
-          left: size - lobe,
-        }}
-      />
-      <View
-        style={{
-          position: 'absolute',
-          width: lobe,
-          height: lobe,
-          backgroundColor: color,
-          top: size * 0.18,
-          left: (size - lobe) / 2,
-          borderRadius: size * 0.08,
-          transform: [{ rotate: '45deg' }],
-        }}
-      />
-    </View>
+    <>
+      <Smile x={27} y={39} w={17} h={10} color={color} />
+      <Smile x={56} y={39} w={17} h={10} color={color} />
+      <Smile x={40} y={58} w={20} h={12} color={color} thickness={4.5} />
+    </>
   );
 }
 
-export function PauseIcon({ size = DEFAULT_SIZE, color = colors.ink }: IconProps) {
-  const barWidth = size * 0.2;
-  const barHeight = size * 0.56;
-  const bar = { width: barWidth, height: barHeight, borderRadius: barWidth / 2, backgroundColor: color };
+export function BlobFace({ size = DEFAULT_SIZE, color = palette.cocoa }: IconProps) {
+  return <Canvas size={size}><Face color={color} /></Canvas>;
+}
+
+type CharacterShape = 'pebble' | 'cushion' | 'petal';
+function Character({ size, color, shape = 'pebble' }: { size: number; color: string; shape?: CharacterShape }) {
+  const corners: ViewStyle = shape === 'cushion'
+    ? { borderTopLeftRadius: 24, borderTopRightRadius: 30, borderBottomLeftRadius: 28, borderBottomRightRadius: 23 }
+    : shape === 'petal'
+      ? { borderTopLeftRadius: 15, borderTopRightRadius: 48, borderBottomLeftRadius: 48, borderBottomRightRadius: 48 }
+      : { borderTopLeftRadius: 46, borderTopRightRadius: 43, borderBottomLeftRadius: 40, borderBottomRightRadius: 48 };
   return (
-    <View style={{ width: size, height: size, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: size * 0.16 }}>
-      <View style={bar} />
-      <View style={bar} />
-    </View>
+    <Canvas size={size}>
+      <View style={{ position: 'absolute', left: 3, top: 4, width: 94, height: 93, backgroundColor: color, overflow: 'hidden', ...corners }}>
+        <Shape x={-14} y={64} w={118} h={52} color={palette.cocoa} style={{ opacity: 0.055 }} rotate={-15} />
+      </View>
+      <Shape x={19} y={52} w={10} h={5} color={palette.rose} style={{ opacity: 0.6 }} />
+      <Shape x={71} y={52} w={10} h={5} color={palette.rose} style={{ opacity: 0.6 }} />
+      <Face />
+    </Canvas>
   );
 }
 
-export function PlayIcon({ size = DEFAULT_SIZE, color = colors.ink }: IconProps) {
+export function MiamMascot({ size = DEFAULT_SIZE, color = palette.apricot }: IconProps) {
+  return <Character size={size} color={color} />;
+}
+
+/** A little gathering of calm characters for the welcome illustration. */
+export function MiamCompanions({ size = 260 }: Pick<IconProps, 'size'>) {
   return (
-    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-      <View
-        style={{
-          width: 0,
-          height: 0,
-          borderTopWidth: size * 0.28,
-          borderBottomWidth: size * 0.28,
-          borderLeftWidth: size * 0.36,
-          borderTopColor: 'transparent',
-          borderBottomColor: 'transparent',
-          borderLeftColor: color,
-          marginLeft: size * 0.06,
-        }}
-      />
-    </View>
+    <Canvas size={size}>
+      <View style={{ position: 'absolute', left: 6, top: 16, transform: [{ rotate: '-14deg' }] }}><Character size={27} color={palette.sky} /></View>
+      <View style={{ position: 'absolute', left: 62, top: 5, transform: [{ rotate: '24deg' }] }}><Character size={26} color={palette.honey} shape="cushion" /></View>
+      <Shape x={38} y={7} w={12} h={18} color={palette.rose} radius={5} rotate={-23} style={{ borderBottomRightRadius: 12 }} />
+      <View style={{ position: 'absolute', left: 29, top: 32, transform: [{ rotate: '-4deg' }] }}><MiamMascot size={46} /></View>
+      <View style={{ position: 'absolute', left: 9, top: 64, transform: [{ rotate: '-26deg' }] }}><Character size={25} color={palette.honey} shape="petal" /></View>
+      <View style={{ position: 'absolute', left: 64, top: 71, transform: [{ rotate: '-24deg' }] }}><Character size={27} color={palette.sky} shape="petal" /></View>
+      <Shape x={82} y={45} w={15} h={18} color={palette.rose} radius={6} rotate={-30} style={{ borderBottomLeftRadius: 12 }} />
+    </Canvas>
   );
 }
 
-export function ClockIcon({ size = DEFAULT_SIZE, color = colors.coral.DEFAULT }: IconProps) {
+export function BackIcon({ size = DEFAULT_SIZE, color = palette.cocoa }: IconProps) {
   return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-        backgroundColor: color,
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <View
-        style={{
-          width: Math.max(1.5, size * 0.12),
-          height: size * 0.32,
-          borderRadius: size * 0.06,
-          backgroundColor: colors.onColor,
-          marginBottom: size * 0.14,
-          transform: [{ rotate: '20deg' }],
-        }}
-      />
-    </View>
+    <Canvas size={size}>
+      <Stroke x={25} y={45} length={55} color={color} />
+      <Stroke x={18} y={34} length={34} color={color} rotate={-43} />
+      <Stroke x={18} y={57} length={34} color={color} rotate={43} />
+    </Canvas>
   );
 }
 
-export function FlameIcon({ size = DEFAULT_SIZE, color = colors.coral.DEFAULT }: IconProps) {
+export function CloseIcon({ size = DEFAULT_SIZE, color = palette.cocoa }: IconProps) {
   return (
-    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'flex-end' }}>
-      <View
-        style={{
-          width: size * 0.6,
-          height: size * 0.5,
-          borderRadius: size * 0.3,
-          borderBottomLeftRadius: size * 0.1,
-          backgroundColor: color,
-        }}
-      />
-    </View>
+    <Canvas size={size}>
+      <Stroke x={18} y={45} length={64} color={color} rotate={45} />
+      <Stroke x={18} y={45} length={64} color={color} rotate={-45} />
+    </Canvas>
   );
 }
 
-export function PlateIcon({ size = DEFAULT_SIZE, color = colors.coral.DEFAULT }: IconProps) {
+export function SettingsIcon({ size = DEFAULT_SIZE, color = palette.cocoa }: IconProps) {
   return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-        backgroundColor: color,
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <View
-        style={{
-          width: size * 0.4,
-          height: size * 0.4,
-          borderRadius: (size * 0.4) / 2,
-          backgroundColor: colors.onColor,
-          opacity: 0.85,
-        }}
-      />
-    </View>
+    <Canvas size={size}>
+      <Stroke x={14} y={29} length={72} color={color} thickness={6} />
+      <Stroke x={14} y={65} length={72} color={color} thickness={6} />
+      <Shape x={32} y={23} w={18} color={color} />
+      <Shape x={60} y={59} w={18} color={color} />
+    </Canvas>
+  );
+}
+
+export function HeartIcon({ size = DEFAULT_SIZE, color = palette.rose }: IconProps) {
+  return (
+    <Canvas size={size}>
+      <Shape x={14} y={16} w={45} color={color} />
+      <Shape x={41} y={16} w={45} color={color} />
+      <Shape x={26} y={28} w={49} color={color} radius={13} rotate={45} />
+    </Canvas>
+  );
+}
+
+export function PauseIcon({ size = DEFAULT_SIZE, color = palette.cocoa }: IconProps) {
+  return (
+    <Canvas size={size}>
+      <Shape x={25} y={20} w={16} h={60} color={color} />
+      <Shape x={59} y={20} w={16} h={60} color={color} />
+    </Canvas>
+  );
+}
+
+export function PlayIcon({ size = DEFAULT_SIZE, color = palette.cocoa }: IconProps) {
+  return (
+    <Canvas size={size}>
+      <View style={{ position: 'absolute', left: 32, top: 24, width: 0, height: 0, borderTopWidth: 26, borderBottomWidth: 26, borderLeftWidth: 40, borderTopColor: 'transparent', borderBottomColor: 'transparent', borderLeftColor: color }} />
+      <Stroke x={26} y={45} length={51} thickness={12} color={color} rotate={32} />
+      <Stroke x={26} y={43} length={51} thickness={12} color={color} rotate={-32} />
+      <Shape x={26} y={22} w={12} h={56} color={color} />
+    </Canvas>
+  );
+}
+
+export function ClockIcon({ size = DEFAULT_SIZE, color = palette.honey }: IconProps) {
+  return (
+    <Canvas size={size}>
+      <Shape x={40} y={1} w={20} h={13} color={color} radius={5} />
+      <Shape x={8} y={13} w={84} h={83} color={color} style={{ borderBottomLeftRadius: 37, borderTopRightRadius: 39 }} />
+      <Stroke x={36} y={39} length={26} color={palette.cocoa} rotate={-90} thickness={7} />
+      <Stroke x={47} y={50} length={25} color={palette.cocoa} rotate={28} thickness={7} />
+      <Shape x={44} y={47} w={9} color={palette.cocoa} />
+    </Canvas>
+  );
+}
+
+export function FlameIcon({ size = DEFAULT_SIZE, color = palette.apricot }: IconProps) {
+  return (
+    <Canvas size={size}>
+      <Shape x={22} y={13} w={59} h={76} color={color} rotate={18} style={{ borderTopLeftRadius: 6, borderTopRightRadius: 43, borderBottomLeftRadius: 37, borderBottomRightRadius: 39 }} />
+      <Shape x={35} y={46} w={32} h={40} color={color === colors.onColor ? palette.cocoa : palette.honey} rotate={16} style={{ borderTopLeftRadius: 3, borderTopRightRadius: 24, borderBottomLeftRadius: 21, borderBottomRightRadius: 22 }} />
+    </Canvas>
+  );
+}
+
+export function PlateIcon({ size = DEFAULT_SIZE, color = palette.sage }: IconProps) {
+  return (
+    <Canvas size={size}>
+      <Shape x={20} y={15} w={64} h={71} color={color} />
+      <View style={{ position: 'absolute', left: 31, top: 26, width: 42, height: 49, borderWidth: 4, borderColor: palette.cream, borderRadius: 25 }} />
+      <Stroke x={-18} y={48} length={64} color={palette.cocoa} rotate={90} thickness={6} />
+      <Shape x={5} y={17} w={18} h={25} color={palette.cocoa} radius={6} />
+      <Stroke x={60} y={48} length={64} color={palette.cocoa} rotate={90} thickness={6} />
+      <Shape x={84} y={16} w={16} h={29} color={palette.cocoa} />
+    </Canvas>
   );
 }
 
 export function AlertIcon({ size = DEFAULT_SIZE, color = colors.onColor }: IconProps) {
-  const barWidth = Math.max(2, size * 0.16);
   return (
-    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center', gap: size * 0.14 }}>
-      <View style={{ width: barWidth, height: size * 0.4, borderRadius: barWidth / 2, backgroundColor: color }} />
-      <View style={{ width: barWidth, height: barWidth, borderRadius: barWidth / 2, backgroundColor: color }} />
-    </View>
+    <Canvas size={size}>
+      <Shape x={42} y={17} w={16} h={42} color={color} />
+      <Shape x={42} y={70} w={16} color={color} />
+    </Canvas>
   );
 }

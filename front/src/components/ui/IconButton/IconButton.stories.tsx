@@ -15,7 +15,7 @@ type Story = StoryObj<typeof IconButton>;
 
 export const Back: Story = {};
 export const Settings: Story = {
-  args: { icon: <SettingsIcon />, accessibilityLabel: 'Réglages', tint: colors.gold.tint },
+  args: { icon: <SettingsIcon size={24} />, accessibilityLabel: 'Réglages', variant: 'plain' },
 };
 export const Favorite: Story = {
   args: { icon: <HeartIcon />, accessibilityLabel: 'Ajouter aux favoris', tint: colors.coral.tint },

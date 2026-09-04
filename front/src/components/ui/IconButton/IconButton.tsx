@@ -8,11 +8,12 @@ export interface IconButtonProps {
   onPress: () => void;
   accessibilityLabel: string;
   size?: number;
+  variant?: 'soft' | 'plain';
   /** Badge background color — defaults to plain white, but a signature tint (e.g. `colors.gold.tint`) reads friendlier. */
   tint?: string;
 }
 
-export function IconButton({ icon, onPress, accessibilityLabel, size = 44, tint = colors.surface }: IconButtonProps) {
+export function IconButton({ icon, onPress, accessibilityLabel, size = 44, tint = colors.surface, variant = 'soft' }: IconButtonProps) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -20,7 +21,8 @@ export function IconButton({ icon, onPress, accessibilityLabel, size = 44, tint 
       onPress={onPress}
       style={({ pressed }) => [
         styles.base,
-        { width: size, height: size, borderRadius: size / 2, backgroundColor: tint },
+        variant === 'soft' && styles.soft,
+        { width: size, height: size, borderRadius: size / 2, backgroundColor: variant === 'plain' ? 'transparent' : tint },
         pressed && styles.pressed,
       ]}
     >
@@ -33,6 +35,8 @@ const styles = StyleSheet.create({
   base: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  soft: {
     shadowColor: colors.ink,
     shadowOpacity: 0.08,
     shadowRadius: 6,

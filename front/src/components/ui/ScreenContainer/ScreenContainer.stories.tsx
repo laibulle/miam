@@ -17,7 +17,7 @@ export const Scroll: Story = {
     <ScreenContainer>
       <Text style={{ ...typography.displayL, color: colors.ink }}>Contenu défilant</Text>
       <Text style={{ ...typography.bodyL, color: colors.inkMuted }}>
-        Sur un écran large, cette colonne reste à largeur mobile, centrée sur le fond sombre.
+        La colonne s'adapte à l'écran jusqu'à 800 px, centrée sur le fond crème.
       </Text>
     </ScreenContainer>
   ),
