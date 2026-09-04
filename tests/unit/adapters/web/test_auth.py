@@ -13,13 +13,11 @@ from google.auth import crypt, jwt
 from google.auth.exceptions import TransportError
 from starlette.websockets import WebSocketDisconnect
 
-from app.adapters.inbound.web.auth import (
-    AuthSettings,
-    RequireAdkAccount,
-    SessionStore,
-    auth_router,
-    verify_google_credential,
-)
+from app.adapters.inbound.web.adk_access import RequireAdkAccount
+from app.adapters.inbound.web.auth import auth_router
+from app.adapters.inbound.web.auth_settings import AuthSettings
+from app.adapters.outbound.google_identity import verify_google_credential
+from app.adapters.outbound.login_sessions import SessionStore
 
 ORIGIN = "https://miam.test"
 HEADERS = {"Origin": ORIGIN, "X-Requested-With": "Miam"}
@@ -175,7 +173,7 @@ def test_cookie_rotation_logout_and_expiry(setup):
     assert client.delete("/auth/session", headers=HEADERS).status_code == 204
     assert sessions.user(token) is None
     assert client.get("/auth/session").status_code == 401
-    with patch("app.adapters.inbound.web.auth.time.time", return_value=100):
+    with patch("app.adapters.outbound.login_sessions.time.time", return_value=100):
         token = sessions.create(OWNER)
     assert sessions.user(token) is None
     assert sessions.user("invalid") is None
@@ -184,13 +182,16 @@ def test_cookie_rotation_logout_and_expiry(setup):
 
 def test_google_verifier_uses_server_audience_and_stable_subject():
     with patch(
-        "app.adapters.inbound.web.auth.id_token.verify_oauth2_token", return_value={"sub": "123"}
+        "app.adapters.outbound.google_identity.id_token.verify_oauth2_token",
+        return_value={"sub": "123"},
     ) as verify:
         first = verify_google_credential("token-a", "client-id")
         second = verify_google_credential("token-b", "client-id")
         assert first == second and first.startswith("google-")
         assert verify.call_args.args[2] == "client-id"
-    with patch("app.adapters.inbound.web.auth.id_token.verify_oauth2_token", return_value={}):
+    with patch(
+        "app.adapters.outbound.google_identity.id_token.verify_oauth2_token", return_value={}
+    ):
         with pytest.raises(ValueError):
             verify_google_credential("token", "client-id")
 
@@ -229,7 +230,7 @@ def test_real_google_verifier_rejects_invalid_jwts_without_network(setup, signin
         signature = ("A" if signature[0] != "A" else "B") + signature[1:]
         token = f"{header}.{payload}.{signature}"
     response = SimpleNamespace(status=200, data=json.dumps({"test": public}).encode())
-    with patch("app.adapters.inbound.web.auth.BoundedGoogleRequest") as transport:
+    with patch("app.adapters.outbound.google_identity.BoundedGoogleRequest") as transport:
         transport.return_value.return_value = response
         result = client.post("/auth/google", headers=HEADERS, json={"credential": token})
     assert result.status_code == (204 if change is None else 401)

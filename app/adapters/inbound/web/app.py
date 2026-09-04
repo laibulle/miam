@@ -3,13 +3,11 @@ from pathlib import Path
 from dotenv import load_dotenv
 from google.adk.cli.fast_api import get_fast_api_app
 
-from app.adapters.inbound.web.auth import (
-    AuthSettings,
-    RequireAdkAccount,
-    SessionStore,
-    auth_router,
-)
+from app.adapters.inbound.web.adk_access import RequireAdkAccount
+from app.adapters.inbound.web.auth import auth_router
+from app.adapters.inbound.web.auth_settings import AuthSettings
 from app.adapters.inbound.web.static_files import ExpoStaticFiles
+from app.adapters.outbound.login_sessions import SessionStore
 
 WEB_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = WEB_DIR.parents[3]
