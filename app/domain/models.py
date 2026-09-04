@@ -17,8 +17,8 @@ class ExpertRecipesScore(BaseModel):
 class ExpertRecipeScore(BaseModel):
     recipe_name: str
     score: int
-    improvements: None | str
-    substitutions: None | str
+    improvements: None | str = None
+    substitutions: None | str = None
 
 
 class FoodFacts(BaseModel):
@@ -43,7 +43,7 @@ class ChiefRecipe(BaseModel):
 class RecipeStep(BaseModel):
     abstract: str
     long_description: str
-    duration: int | None
+    duration: int | None = None
     timer: bool
     wait_for_end: bool
 

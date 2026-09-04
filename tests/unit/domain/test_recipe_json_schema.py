@@ -1,4 +1,4 @@
-from app.domain.models import ChiefRecipe, RecipeResponse
+from app.domain.models import ChiefRecipe, ExpertRecipeScore, RecipeResponse
 
 
 def test_chief_recipe_json_schema():
@@ -20,12 +20,13 @@ def test_chief_recipe_json_schema():
                     "long_description": {"title": "Long Description", "type": "string"},
                     "duration": {
                         "anyOf": [{"type": "integer"}, {"type": "null"}],
+                        "default": None,
                         "title": "Duration",
                     },
                     "timer": {"title": "Timer", "type": "boolean"},
                     "wait_for_end": {"title": "Wait For End", "type": "boolean"},
                 },
-                "required": ["abstract", "long_description", "duration", "timer", "wait_for_end"],
+                "required": ["abstract", "long_description", "timer", "wait_for_end"],
                 "title": "RecipeStep",
                 "type": "object",
             },
@@ -87,3 +88,15 @@ def test_recipe_response_schema_uses_final_recipe_with_expert_reviews():
         "type": "array",
     }
     assert "tips" in chief_recipe["required"]
+
+
+def test_expert_score_schema_has_optional_nullable_recommendations():
+    schema = ExpertRecipeScore.model_json_schema()
+
+    assert schema["required"] == ["recipe_name", "score"]
+    for field in ("improvements", "substitutions"):
+        assert schema["properties"][field]["default"] is None
+        assert {option["type"] for option in schema["properties"][field]["anyOf"]} == {
+            "string",
+            "null",
+        }

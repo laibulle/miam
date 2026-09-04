@@ -146,6 +146,23 @@ test("rejects incomplete final recipes before rendering", () => {
   }
 });
 
+test("accepts and renders a duration omitted by ADK", () => {
+  const { context, get } = setup();
+  const payload = structuredClone(response);
+  delete payload.recipe.recipe.steps[0].duration;
+  const parsed = context.extractRecipeResponse([{ output: payload }]);
+  context.showRecipe(parsed);
+  assert.equal(get("#step-list").children[0].querySelector("[data-step-duration]").textContent, "");
+  assert.equal(get("#step-list").children[1].querySelector("[data-step-duration]").textContent, "30 min");
+});
+
+test("rejects an invalid duration even though omission is allowed", () => {
+  const { context } = setup();
+  const payload = structuredClone(response);
+  payload.recipe.recipe.steps[0].duration = "unknown";
+  assert.throws(() => context.parseRecipeResponse(payload), /valid recipe/);
+});
+
 test("rejects intermediate or partial responses", () => {
   const { context } = setup();
   assert.throws(() => context.extractRecipeResponse([

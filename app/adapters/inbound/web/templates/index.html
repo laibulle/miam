@@ -731,7 +731,7 @@
           !Array.isArray(recipe.ingredients) ||
           !recipe.ingredients.every((ingredient) => ingredient && typeof ingredient.name === "string" && Number.isInteger(ingredient.quantity) && typeof ingredient.unit === "string") ||
           !Array.isArray(recipe.steps) ||
-          !recipe.steps.every((step) => step && typeof step.abstract === "string" && typeof step.long_description === "string" && (step.duration === null || Number.isInteger(step.duration)) && typeof step.timer === "boolean" && typeof step.wait_for_end === "boolean") ||
+          !recipe.steps.every((step) => step && typeof step.abstract === "string" && typeof step.long_description === "string" && (step.duration == null || Number.isInteger(step.duration)) && typeof step.timer === "boolean" && typeof step.wait_for_end === "boolean") ||
           !Array.isArray(recipe.tips) ||
           !recipe.tips.every((tip) => typeof tip === "string") ||
           !foodFacts ||
