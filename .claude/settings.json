@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(* --version)",
+      "Bash(* --help *)",
+      "Edit(/front)"
+    ],
+    "deny": [
+      "Bash(git push *)",
+      "Bash(npm *)",
+      "Bash(git commit *)",
+      "Edit(/app/**)"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "penpot"
+  ]
+}
