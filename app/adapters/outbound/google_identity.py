@@ -2,11 +2,17 @@
 
 import hashlib
 
+from google.auth.transport.requests import Request as GoogleRequest
 from google.oauth2 import id_token
 
-from app.adapters.outbound.google_keys import CachedGoogleRequest
 
-_google_request = CachedGoogleRequest()
+class BoundedGoogleRequest(GoogleRequest):
+    def __call__(self, *args, **kwargs):
+        kwargs["timeout"] = 5
+        return super().__call__(*args, **kwargs)
+
+
+_google_request = BoundedGoogleRequest()
 
 
 def verify_google_credential(credential: str, client_id: str) -> str:

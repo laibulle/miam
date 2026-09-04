@@ -77,10 +77,6 @@ adapter, without an additional package.
    `user_id` matches the Google identity. Expired/invalid tokens receive **401**;
    another user's resources and ADK administrative/debug routes receive **403**.
 
-Google's public certificates are cached per worker for up to five minutes,
-respecting their HTTP `max-age` and `Age` headers. User tokens and validation
-results are never cached. Key fetches have a five-second timeout; a network
-failure without usable cached keys returns **503**.
 
 The backend has no login-session database, login cookies or CSRF cookie checks.
 Authentication is supplied explicitly in the bearer header, never by a cookie or
@@ -100,7 +96,7 @@ revoke the Google token: a copy remains usable until expiry.
 
 `auth.py` handles bearer verification and the identity route; `adk_access.py`
 handles access to ADK resources; `google_identity.py` delegates token validation
-to Google; `google_keys.py` caches only public keys. Configuration remains in
+to Google. Configuration remains in
 `auth_settings.py`. No Firebase or additional dependency is required.
 
 Expo's development proxy forwards the same bearer header to FastAPI and does
