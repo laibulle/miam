@@ -3,7 +3,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from google.adk.cli.fast_api import get_fast_api_app
 
-from app.adapters.inbound.web.adk_access import RequireAdkAccount
+from app.adapters.inbound.web.adk_access import protect_adk
 from app.adapters.inbound.web.auth import auth_router
 from app.adapters.inbound.web.auth_settings import AuthSettings
 from app.adapters.inbound.web.static_files import ExpoStaticFiles
@@ -20,7 +20,7 @@ app = get_fast_api_app(
 )
 
 # Capture every ADK route before adding public sign-in and static assets.
-app.add_middleware(RequireAdkAccount, settings=auth_settings, routes=list(app.routes))
+protect_adk(app, auth_settings)
 app.include_router(auth_router(auth_settings))
 
 # Mount last so the ADK API and FastAPI documentation keep their routes.

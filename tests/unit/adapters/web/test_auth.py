@@ -14,7 +14,7 @@ from google.auth.exceptions import TransportError
 from starlette.responses import StreamingResponse
 from starlette.websockets import WebSocketDisconnect
 
-from app.adapters.inbound.web.adk_access import RequireAdkAccount
+from app.adapters.inbound.web.adk_access import protect_adk
 from app.adapters.inbound.web.auth import auth_router
 from app.adapters.inbound.web.auth_settings import AuthSettings
 from app.adapters.outbound.google_identity import verify_google_credential
@@ -52,7 +52,7 @@ def setup():
     async def live(websocket):
         await websocket.accept()
 
-    app.add_middleware(RequireAdkAccount, settings=settings, routes=list(app.routes))
+    protect_adk(app, settings)
     app.include_router(auth_router(settings))
 
     @app.get("/")
