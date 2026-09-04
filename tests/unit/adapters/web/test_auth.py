@@ -19,12 +19,13 @@ from app.adapters.inbound.web.auth_settings import AuthSettings
 from app.adapters.outbound.google_identity import verify_google_credential
 
 HEADERS = {"Authorization": "Bearer test-token"}
+ALLOWED_EMAILS = frozenset({"alice@example.com"})
 OWNER = "google-" + "a" * 64
 
 
 @pytest.fixture
 def setup():
-    settings = AuthSettings("test.apps.googleusercontent.com", frozenset())
+    settings = AuthSettings("test.apps.googleusercontent.com", frozenset(), ALLOWED_EMAILS)
     app = FastAPI()
 
     @app.post("/run")
@@ -72,7 +73,7 @@ def test_verified_identity_is_returned_without_creating_session(setup):
     assert response.json() == {"user_id": OWNER}
     assert response.headers["cache-control"] == "no-store"
     assert "set-cookie" not in response.headers
-    verify.assert_called_once_with("test-token", settings.client_id)
+    verify.assert_called_once_with("test-token", settings.client_id, ALLOWED_EMAILS)
     assert client.get("/auth/session").status_code == 404
     assert client.post("/auth/google").status_code == 404
     assert client.delete("/auth/session").status_code == 404
@@ -178,10 +179,10 @@ def test_adk_ownership_and_request_body_preserved(setup):
 def test_google_verifier_uses_server_audience_and_stable_subject():
     with patch(
         "app.adapters.outbound.google_identity.id_token.verify_oauth2_token",
-        return_value={"sub": "123"},
+        return_value={"sub": "123", "email": "alice@example.com", "email_verified": True},
     ) as verify:
-        first = verify_google_credential("token-a", "client-id")
-        second = verify_google_credential("token-b", "client-id")
+        first = verify_google_credential("token-a", "client-id", ALLOWED_EMAILS)
+        second = verify_google_credential("token-b", "client-id", ALLOWED_EMAILS)
         assert first == second and first.startswith("google-")
         assert verify.call_count == 2
         assert verify.call_args.args[2] == "client-id"
@@ -189,7 +190,7 @@ def test_google_verifier_uses_server_audience_and_stable_subject():
         "app.adapters.outbound.google_identity.id_token.verify_oauth2_token", return_value={}
     ):
         with pytest.raises(ValueError):
-            verify_google_credential("token", "client-id")
+            verify_google_credential("token", "client-id", ALLOWED_EMAILS)
 
 
 def test_websocket_cannot_bypass_authentication(setup):
@@ -211,13 +212,18 @@ def signing_key():
     return crypt.RSASigner.from_string(private), public.decode()
 
 
-@pytest.mark.parametrize("change", [None, "aud", "iss", "exp", "signature"])
+@pytest.mark.parametrize(
+    "change",
+    [None, "aud", "iss", "exp", "signature", "email", "email_verified", "missing_email"],
+)
 def test_real_google_verifier_rejects_invalid_jwts_without_network(setup, signing_key, change):
     client, settings = setup
     signer, public = signing_key
     now = int(time.time())
     claims = {
         "sub": "123",
+        "email": "alice@example.com",
+        "email_verified": True,
         "aud": settings.client_id,
         "iss": "https://accounts.google.com",
         "iat": now - 60,
@@ -227,6 +233,12 @@ def test_real_google_verifier_rejects_invalid_jwts_without_network(setup, signin
         claims[change] = "wrong"
     elif change == "exp":
         claims["exp"] = now - 1
+    elif change == "email":
+        claims["email"] = "outsider@example.com"
+    elif change == "email_verified":
+        claims["email_verified"] = False
+    elif change == "missing_email":
+        del claims["email"]
     token = jwt.encode(signer, claims, key_id="test").decode()
     if change == "signature":
         header, payload, signature = token.split(".")
@@ -240,5 +252,57 @@ def test_real_google_verifier_rejects_invalid_jwts_without_network(setup, signin
                 client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
             return
         result = client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
-    assert result.status_code == (200 if change is None else 401)
+    expected = 200 if change is None else 401
+    if change in ("email", "email_verified", "missing_email"):
+        expected = 403
+    assert result.status_code == expected
     assert "set-cookie" not in result.headers
+
+
+@pytest.mark.parametrize("value", [None, "", " , , "])
+def test_missing_or_empty_allowlist_denies_everyone(monkeypatch, value):
+    monkeypatch.setenv("GOOGLE_WEB_CLIENT_ID", "client-id")
+    if value is None:
+        monkeypatch.delenv("AUTH_ALLOWED_EMAILS", raising=False)
+    else:
+        monkeypatch.setenv("AUTH_ALLOWED_EMAILS", value)
+    settings = AuthSettings.from_env()
+    assert settings.allowed_emails == frozenset()
+    with (
+        patch(
+            "app.adapters.outbound.google_identity.id_token.verify_oauth2_token",
+            return_value={"sub": "123", "email": "alice@example.com", "email_verified": True},
+        ),
+        pytest.raises(PermissionError),
+    ):
+        verify_google_credential("token", settings.client_id, settings.allowed_emails)
+
+
+def test_allowlist_normalizes_spaces_case_and_duplicates(monkeypatch):
+    monkeypatch.setenv("GOOGLE_WEB_CLIENT_ID", "client-id")
+    monkeypatch.setenv(
+        "AUTH_ALLOWED_EMAILS", " Alice@Example.com, bob@example.com , ,alice@example.com"
+    )
+    settings = AuthSettings.from_env()
+    assert settings.allowed_emails == frozenset({"alice@example.com", "bob@example.com"})
+    with patch(
+        "app.adapters.outbound.google_identity.id_token.verify_oauth2_token",
+        return_value={"sub": "123", "email": "ALICE@example.com", "email_verified": True},
+    ):
+        assert verify_google_credential("token", settings.client_id, settings.allowed_emails)
+
+
+def test_disallowed_account_blocks_sign_in_and_adk(setup):
+    client, _ = setup
+    with patch(
+        "app.adapters.outbound.google_identity.id_token.verify_oauth2_token",
+        return_value={"sub": "123", "email": "outsider@example.com", "email_verified": True},
+    ):
+        for response in (
+            client.get("/auth/me", headers=HEADERS),
+            client.post("/run", headers=HEADERS, json={"user_id": OWNER}),
+            client.post("/run_sse", headers=HEADERS, json={"user_id": OWNER}),
+            client.post(f"/apps/app/users/{OWNER}/sessions", headers=HEADERS, json={}),
+        ):
+            assert response.status_code == 403
+            assert response.json() == {"detail": "Account is not allowed."}

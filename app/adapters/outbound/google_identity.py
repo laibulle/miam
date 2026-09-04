@@ -15,10 +15,19 @@ class BoundedGoogleRequest(GoogleRequest):
 _google_request = BoundedGoogleRequest()
 
 
-def verify_google_credential(credential: str, client_id: str) -> str:
+def verify_google_credential(
+    credential: str, client_id: str, allowed_emails: frozenset[str]
+) -> str:
     # google-auth verifies signature, issuer, audience and expiry against Google's keys.
     claims = id_token.verify_oauth2_token(credential, _google_request, client_id)
     subject = claims.get("sub")
     if not isinstance(subject, str) or not 1 <= len(subject) <= 255:
         raise ValueError("Missing Google subject")
+    email = claims.get("email")
+    if (
+        claims.get("email_verified") is not True
+        or not isinstance(email, str)
+        or email.strip().lower() not in allowed_emails
+    ):
+        raise PermissionError("Account is not allowed")
     return "google-" + hashlib.sha256(subject.encode()).hexdigest()

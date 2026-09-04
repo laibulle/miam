@@ -58,8 +58,14 @@ adapter, without an additional package.
 
    ```dotenv
    GOOGLE_WEB_CLIENT_ID=<same Web client ID as Expo>
+   AUTH_ALLOWED_EMAILS=alice@example.com,bob@example.com
    AUTH_ALLOWED_ORIGINS=http://localhost:8081,http://localhost:8000,http://localhost:8080
    ```
+
+   `AUTH_ALLOWED_EMAILS` lists the verified Google email addresses allowed to sign in.
+   Separate addresses with commas; spaces and case are ignored. An empty or missing
+   list denies everyone. Restart the backend after changing it. This server-side
+   check applies to every authenticated request, including existing tokens.
 
    Use HTTPS in production. `AUTH_ALLOWED_ORIGINS` controls CORS; it does not
    authenticate requests. No client secret or session signing key is needed.

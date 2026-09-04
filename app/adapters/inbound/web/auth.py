@@ -12,7 +12,9 @@ def authenticate(authorization: str | None, settings: AuthSettings) -> str:
     if scheme.lower() != "bearer" or not credential or len(credential) > 16384:
         raise HTTPException(401, "Authentication required.", headers={"WWW-Authenticate": "Bearer"})
     try:
-        return verify_google_credential(credential, settings.client_id)
+        return verify_google_credential(credential, settings.client_id, settings.allowed_emails)
+    except PermissionError:
+        raise HTTPException(403, "Account is not allowed.") from None
     except ValueError:
         raise HTTPException(
             401, "Invalid or expired Google identity.", headers={"WWW-Authenticate": "Bearer"}
