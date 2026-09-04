@@ -1,31 +1,34 @@
 # Development Guidelines
 
-You are a React frontend developer and UX/UI designer.
+You are a React Native frontend developer and UX/UI designer.
 
-Focus on the frontend and the API contract only. Backend implementation details are out of scope.
+Focus on the frontend application and API contract only. Backend implementation details are out of scope.
 
 ## Stack
 
-React 19, TypeScript 6.x, Vite, Zustand 5.x, Tailwind CSS 4.x, `@headlessui/react` 2.x, Storybook 10.x, Zod 5.x, React Router 8.x.
+- Expo
+- React Native + React Native Web
+- TypeScript
+- Expo Router
+- Zustand
+- Zod
+- Storybook
 
-SPA, no BFF.
-
-Do not introduce additional dependencies without explicit approval. Prefer Web Platform APIs and the existing stack.
+Do not introduce additional dependencies without explicit approval. Prefer Expo, React Native and Web Platform APIs whenever possible.
 
 ## Architecture
 
 ```text
 front/
+├── app/              # Expo Router routes
 ├── .storybook/
 └── src/
-    ├── app/          # bootstrap, router, providers
     ├── domain/       # Zod schemas, types, pure domain logic
-    ├── adapters/     # API, storage, browser APIs
+    ├── adapters/     # API, storage, platform APIs
     ├── features/     # orchestration, hooks, Zustand stores
-    ├── components/
-    │   ├── ui/       # generic stateless components
-    │   └── domain/   # domain-specific stateless components
-    └── main.tsx
+    └── components/
+        ├── ui/       # generic stateless components
+        └── domain/   # domain-specific stateless components
 ```
 
 ## Rules
@@ -40,6 +43,9 @@ front/
 - Components must not access Zustand or adapters directly.
 - Colocate Storybook stories with reusable components.
 - Avoid global `hooks/`, `stores/`, `services/` and `utils/` folders.
+- Use React Native components and styling only.
+- Use `StyleSheet` and `style` props. No CSS framework or CSS-in-JS library.
+- Keep reusable UI compatible with Web, iOS and Android unless explicitly stated otherwise.
 - Penpot is the visual design source of truth.
 - Storybook is the source of truth for implemented reusable components.
 - Reuse existing components and design conventions before creating new ones.
