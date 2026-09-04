@@ -13,7 +13,7 @@ __What do we know ?__
 - We should not rely on models to compute food info
 - We should not rely on models to provide recipes and foods substitutions
 
-__ What don't we know ?__
+__What don't we know ?__
 
 - How to retrieve food facts according to an agent requirements
 - The exact agents topology to achieve our goal
