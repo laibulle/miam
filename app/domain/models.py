@@ -1,7 +1,35 @@
 from pydantic import BaseModel, Field, model_validator
 
 
-class Recipe(BaseModel):
+class RecipesSuggestions(BaseModel):
+    suggested_recipes: list[RecipeSuggestion]
+
+
+class RecipeSuggestion(BaseModel):
+    name: str
+    ingredients: list[Ingredient]
+
+
+class ExpertRecipesScore(BaseModel):
+    scores: list[ExpertRecipeScore]
+
+
+class ExpertRecipeScore(BaseModel):
+    recipe_name: str
+    score: int
+    improvements: None | str = None
+    substitutions: None | str = None
+
+
+class FoodFacts(BaseModel):
+    energy100: int
+    fat100: int
+    carb100: int
+    prot100: int
+    fiber100: int
+
+
+class ChiefRecipe(BaseModel):
     name: str
     preparation_duration_minutes: int
     cooking_duration_minutes: int
@@ -9,15 +37,15 @@ class Recipe(BaseModel):
     servings: int
     ingredients: list[Ingredient]
     steps: list[RecipeStep]
-    energy100: int
-    fat100: int
-    carb100: int
-    prot100: int
+    tips: list[str]
 
 
 class RecipeStep(BaseModel):
-    content: str
-    duration: int | None
+    abstract: str
+    long_description: str
+    duration: int | None = None
+    timer: bool
+    wait_for_end: bool
 
 
 class Ingredient(BaseModel):
@@ -38,9 +66,18 @@ class PromptInput(BaseModel):
     month: int
 
 
+class FinalRecipe(BaseModel):
+    recipe: ChiefRecipe
+    nutritionist_quote: str
+    nutritionist_score: int
+    glut_health_expert_quote: str
+    glut_health_expert_score: int
+    food_facts: FoodFacts
+
+
 class RecipeResponse(BaseModel):
     success: bool = Field(description="Whether a recipe was successfully generated.")
-    recipe: Recipe | None = Field(
+    recipe: FinalRecipe | None = Field(
         default=None,
         description="The generated recipe. Required when success is true.",
     )

@@ -47,7 +47,7 @@ __Sample for for adk web__
 
 ```json
 {
-  "prompt": "Create a healthy seasonal dinner recipe",
+  "prompt": "I want a healthy meal with french fries and a sauce",
   "activity_level": 2,
   "age": 35,
   "gender": "male",
