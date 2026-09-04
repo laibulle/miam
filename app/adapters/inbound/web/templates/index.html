@@ -419,6 +419,31 @@
               </section>
             </div>
 
+            <section id="chef-tips-section" class="hidden border-t border-white/8 px-5 py-6 sm:px-7" aria-labelledby="chef-tips-title">
+              <h3 id="chef-tips-title" class="font-semibold text-stone-100">Chef's tips</h3>
+              <ul id="chef-tips" class="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-stone-400"></ul>
+            </section>
+
+            <section class="border-t border-white/8 px-5 py-6 sm:px-7" aria-labelledby="expert-reviews-title">
+              <h3 id="expert-reviews-title" class="font-semibold text-stone-100">Expert reviews</h3>
+              <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                <div class="min-w-0 rounded-2xl border border-white/8 bg-white/[0.035] p-4">
+                  <div class="flex flex-wrap items-baseline justify-between gap-2">
+                    <h4 class="text-sm font-medium text-orange-300">Nutrition</h4>
+                    <span class="text-xs text-stone-400">Score: <strong id="nutritionist-score" class="text-stone-200"></strong></span>
+                  </div>
+                  <p id="nutritionist-quote" class="mt-3 whitespace-pre-line break-words text-sm leading-6 text-stone-400"></p>
+                </div>
+                <div class="min-w-0 rounded-2xl border border-white/8 bg-white/[0.035] p-4">
+                  <div class="flex flex-wrap items-baseline justify-between gap-2">
+                    <h4 class="text-sm font-medium text-emerald-300">Gut health</h4>
+                    <span class="text-xs text-stone-400">Score: <strong id="gut-health-score" class="text-stone-200"></strong></span>
+                  </div>
+                  <p id="gut-health-quote" class="mt-3 whitespace-pre-line break-words text-sm leading-6 text-stone-400"></p>
+                </div>
+              </div>
+            </section>
+
             <section
               class="border-t border-white/8 bg-black/15 px-5 py-6 sm:px-7"
               aria-labelledby="nutrition-title"
@@ -504,9 +529,14 @@
               class="grid size-8 place-items-center rounded-xl bg-orange-500/10
                      text-xs font-bold text-orange-400"
             ></span>
-            <div class="pt-1">
-              <p data-step-content class="text-sm leading-6 text-stone-300"></p>
-              <p data-step-duration class="mt-1 text-xs text-stone-600"></p>
+            <div class="min-w-0 pt-1">
+              <h4 data-step-abstract class="break-words text-sm font-semibold leading-6 text-stone-200"></h4>
+              <p data-step-description class="mt-1 whitespace-pre-line break-words text-sm leading-6 text-stone-400"></p>
+              <div class="mt-2 flex flex-wrap gap-2 text-xs text-stone-400">
+                <span data-step-duration></span>
+                <span data-step-timer class="hidden rounded-full bg-orange-500/10 px-2 py-0.5 text-orange-300">Timer recommended</span>
+                <span data-step-wait class="hidden rounded-full bg-white/5 px-2 py-0.5">Wait until this step is complete before continuing</span>
+              </div>
             </div>
           </li>
         </template>
@@ -629,21 +659,50 @@
         return createSession(userId);
       }
 
-      function extractText(events) {
-        return events
-          .flatMap((event) => event.content?.parts ?? [])
-          .filter((part) => !part.thought)
-          .map((part) => part.text ?? "")
-          .filter(Boolean)
-          .join("");
+      function extractRecipeResponse(events) {
+        if (!Array.isArray(events)) {
+          throw new Error("ADK returned an unexpected response format.");
+        }
+
+        // Intermediate agents also return JSON. Only select a final response envelope.
+        for (const event of [...events].reverse()) {
+          if (event.partial) continue;
+          const parts = (event.content?.parts ?? []).filter((part) => !part.thought);
+          const candidates = [
+            event.output,
+            parts.map((part) => part.text ?? "").join(""),
+            ...parts
+              .filter((part) => part.functionCall?.name === "set_model_response")
+              .map((part) => part.functionCall.args),
+          ];
+          for (const candidate of candidates) {
+            let parsed = candidate;
+            if (typeof candidate === "string") {
+              try {
+                parsed = JSON.parse(normalizeJson(candidate));
+              } catch {
+                continue;
+              }
+            }
+            if (parsed && typeof parsed.success === "boolean") {
+              return parseRecipeResponse(parsed);
+            }
+          }
+        }
+        throw new Error("Miam did not return a final recipe response.");
       }
 
-      function parseRecipeResponse(text) {
-        const normalized = text
+      function normalizeJson(text) {
+        return text
           .trim()
           .replace(/^```(?:json)?\s*/i, "")
           .replace(/\s*```$/, "");
-        const recipeResponse = JSON.parse(normalized);
+      }
+
+      function parseRecipeResponse(value) {
+        const recipeResponse = typeof value === "string"
+          ? JSON.parse(normalizeJson(value))
+          : value;
 
         if (
           !recipeResponse ||
@@ -655,21 +714,37 @@
 
         if (!recipeResponse.success) {
           throw new Error(
-            recipeResponse.description || "Miam could not generate a recipe.",
+            typeof recipeResponse.description === "string" && recipeResponse.description.trim()
+              ? recipeResponse.description
+              : "Miam could not generate a recipe.",
           );
         }
 
-        const recipe = recipeResponse.recipe;
+        const finalRecipe = recipeResponse.recipe;
+        const recipe = finalRecipe?.recipe;
+        const foodFacts = finalRecipe?.food_facts;
         if (
           !recipe ||
           typeof recipe.name !== "string" ||
+          typeof recipe.description !== "string" ||
+          ![recipe.preparation_duration_minutes, recipe.cooking_duration_minutes, recipe.servings].every(Number.isInteger) ||
           !Array.isArray(recipe.ingredients) ||
-          !Array.isArray(recipe.steps)
+          !recipe.ingredients.every((ingredient) => ingredient && typeof ingredient.name === "string" && Number.isInteger(ingredient.quantity) && typeof ingredient.unit === "string") ||
+          !Array.isArray(recipe.steps) ||
+          !recipe.steps.every((step) => step && typeof step.abstract === "string" && typeof step.long_description === "string" && (step.duration === null || Number.isInteger(step.duration)) && typeof step.timer === "boolean" && typeof step.wait_for_end === "boolean") ||
+          !Array.isArray(recipe.tips) ||
+          !recipe.tips.every((tip) => typeof tip === "string") ||
+          !foodFacts ||
+          !["energy100", "fat100", "carb100", "prot100", "fiber100"].every((key) => Number.isInteger(foodFacts[key])) ||
+          typeof finalRecipe.nutritionist_quote !== "string" ||
+          typeof finalRecipe.glut_health_expert_quote !== "string" ||
+          !Number.isInteger(finalRecipe.nutritionist_score) ||
+          !Number.isInteger(finalRecipe.glut_health_expert_score)
         ) {
           throw new Error("The successful response does not contain a valid recipe.");
         }
 
-        return recipe;
+        return finalRecipe;
       }
 
       function getSettings() {
@@ -706,7 +781,8 @@
         resultError.classList.add("hidden");
       }
 
-      function showRecipe(recipe) {
+      function showRecipe(finalRecipe) {
+        const { recipe, food_facts: foodFacts } = finalRecipe;
         document.querySelector("#recipe-name").textContent = recipe.name;
         document.querySelector("#recipe-description").textContent = recipe.description;
         document.querySelector("#recipe-preparation-duration-minutes").textContent =
@@ -716,15 +792,28 @@
         document.querySelector("#recipe-servings").textContent =
           `${recipe.servings} serving${recipe.servings > 1 ? "s" : ""}`;
         document.querySelector("#recipe-energy").textContent =
-          numberFormatter.format(recipe.energy100);
+          numberFormatter.format(foodFacts.energy100);
         document.querySelector("#recipe-fat").textContent =
-          numberFormatter.format(recipe.fat100);
+          numberFormatter.format(foodFacts.fat100);
         document.querySelector("#recipe-carbs").textContent =
-          numberFormatter.format(recipe.carb100);
+          numberFormatter.format(foodFacts.carb100);
         document.querySelector("#recipe-protein").textContent =
-          numberFormatter.format(recipe.prot100);
+          numberFormatter.format(foodFacts.prot100);
         document.querySelector("#recipe-fiber").textContent =
-          numberFormatter.format(recipe.fiber100);
+          numberFormatter.format(foodFacts.fiber100);
+        document.querySelector("#nutritionist-score").textContent = numberFormatter.format(finalRecipe.nutritionist_score);
+        document.querySelector("#nutritionist-quote").textContent = finalRecipe.nutritionist_quote;
+        document.querySelector("#gut-health-score").textContent = numberFormatter.format(finalRecipe.glut_health_expert_score);
+        document.querySelector("#gut-health-quote").textContent = finalRecipe.glut_health_expert_quote;
+
+        const tipsList = document.querySelector("#chef-tips");
+        tipsList.replaceChildren();
+        for (const tip of recipe.tips) {
+          const item = document.createElement("li");
+          item.textContent = tip;
+          tipsList.append(item);
+        }
+        document.querySelector("#chef-tips-section").classList.toggle("hidden", recipe.tips.length === 0);
 
         ingredientList.replaceChildren();
         for (const ingredient of recipe.ingredients) {
@@ -740,9 +829,12 @@
         recipe.steps.forEach((step, index) => {
           const item = stepTemplate.content.cloneNode(true);
           item.querySelector("[data-step-number]").textContent = index + 1;
-          item.querySelector("[data-step-content]").textContent = step.content;
+          item.querySelector("[data-step-abstract]").textContent = step.abstract;
+          item.querySelector("[data-step-description]").textContent = step.long_description;
           item.querySelector("[data-step-duration]").textContent =
             step.duration != null ? `${step.duration} min` : "";
+          item.querySelector("[data-step-timer]").classList.toggle("hidden", !step.timer);
+          item.querySelector("[data-step-wait]").classList.toggle("hidden", !step.wait_for_end);
           stepList.append(item);
         });
 
@@ -792,12 +884,7 @@
             throw new Error(body.detail ?? `ADK error (${response.status})`);
           }
 
-          const answer = extractText(await response.json());
-          if (!answer) {
-            throw new Error("Miam did not return a recipe.");
-          }
-
-          showRecipe(parseRecipeResponse(answer));
+          showRecipe(extractRecipeResponse(await response.json()));
         } catch (error) {
           showError(error instanceof Error ? error : new Error(String(error)));
         } finally {
