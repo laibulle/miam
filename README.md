@@ -51,6 +51,7 @@ npm run build:web
 - [ ] Add food facts DB for procedural accurate food fact computation
 - [ ] User settings store
 - [ ] Define guardrails
+- [ ] Prod ready logging and observability
 
 
 __Sample for adk web__
