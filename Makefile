@@ -35,6 +35,6 @@ docker-build:
 	docker build -t ${IMAGE_NAME} .
 
 docker-run:
-	docker run --rm -it -p 8080:8080 ${IMAGE_NAME}
+	docker run --rm -it -p 8080:8080 --env-file app/.env ${IMAGE_NAME}
 
 .PHONY: sync coverage test lint lint-fix format format-check check dev run-agent docker-build docker-run

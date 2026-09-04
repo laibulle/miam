@@ -36,6 +36,15 @@ npm ci
 npm run build:web
 ```
 
+The frontend uses ADK's standard routes directly: it creates a session with
+`POST /apps/app/users/{user_id}/sessions`, then sends the prompt to `POST /run`
+and validates the final `editor_agent` response. In Docker, FastAPI serves both
+the exported UI and the standard ADK API on the same origin. During Expo web
+development, a transparent proxy forwards these same paths to ADK (configured
+with server-only `ADK_API_URL`, default `http://127.0.0.1:8000`). There is no
+custom recipe endpoint. Model credentials remain server-side and are supplied
+to the container at runtime.
+
 ## Roadmap 🛣️
 
 - [x] Setup project architecture

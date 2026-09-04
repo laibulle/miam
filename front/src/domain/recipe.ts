@@ -15,7 +15,7 @@ export type Ingredient = z.infer<typeof ingredientSchema>;
 export const recipeStepSchema = z.object({
   abstract: z.string(),
   long_description: z.string(),
-  duration: z.number().nullable(),
+  duration: z.number().nullable().default(null),
   timer: z.boolean(),
   wait_for_end: z.boolean(),
 });
