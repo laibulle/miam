@@ -5,8 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9e564fdd-338d-48bc-8c30-eedf18de3c3d" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/marco.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/marco.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/adapters/inbound/web/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/adapters/inbound/web/templates/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/agent.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/domain/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/domain/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/tools/get_foods_from_season_tool.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/tools/get_foods_from_season_tool.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/unit/domain/test_recipe_json_schema.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/unit/domain/test_recipe_json_schema.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/unit/domain/test_recipe_response.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/unit/domain/test_recipe_response.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
