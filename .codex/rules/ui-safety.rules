@@ -1,0 +1,29 @@
+# Défense complémentaire pour les commandes correspondantes hors sandbox.
+# Ne constitue PAS une restriction d'écriture à ui/ ni un blocage réseau global.
+# Chargement au démarrage seulement si la couche projet est active et approuvée.
+prefix_rule(
+    pattern = ["git", "push"],
+    decision = "forbidden",
+    justification = "La mission UI locale n'autorise pas la publication Git.",
+    match = ["git push", "git push origin main"],
+    not_match = ["git status", "git diff"],
+)
+prefix_rule(
+    pattern = ["npm", "publish"],
+    decision = "forbidden",
+    justification = "La mission UI locale n'autorise pas la publication de paquets.",
+    match = ["npm publish", "npm publish --access public"],
+    not_match = ["npm run build"],
+)
+prefix_rule(
+    pattern = ["gcloud"],
+    decision = "forbidden",
+    justification = "L'infrastructure cloud est hors périmètre de cette mission UI.",
+    match = ["gcloud run deploy miam"],
+)
+prefix_rule(
+    pattern = ["terraform"],
+    decision = "forbidden",
+    justification = "L'infrastructure est hors périmètre de cette mission UI.",
+    match = ["terraform apply"],
+)
