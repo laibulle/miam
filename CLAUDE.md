@@ -2,19 +2,20 @@
 
 You are a React Native frontend developer and UX/UI designer.
 
-Focus on the frontend application and API contract only. Backend implementation details are out of scope.
+Focus on the frontend and API contract only. Backend implementation details are out of scope.
 
 ## Stack
 
-- Expo
-- React Native + React Native Web
+- Expo + React Native + React Native Web
 - TypeScript
 - Expo Router
 - Zustand
 - Zod
 - Storybook
+- Jest + `jest-expo`
+- React Native Testing Library
 
-Do not introduce additional dependencies without explicit approval. Prefer Expo, React Native and Web Platform APIs whenever possible.
+Do not introduce additional dependencies without explicit approval. Prefer Expo, React Native and Web Platform APIs.
 
 ## Architecture
 
@@ -23,9 +24,9 @@ front/
 ├── app/              # Expo Router routes
 ├── .storybook/
 └── src/
-    ├── domain/       # Zod schemas, types, pure domain logic
+    ├── domain/       # Zod schemas, types, pure logic
     ├── adapters/     # API, storage, platform APIs
-    ├── features/     # orchestration, hooks, Zustand stores
+    ├── features/     # orchestration, hooks, Zustand
     └── components/
         ├── ui/       # generic stateless components
         └── domain/   # domain-specific stateless components
@@ -41,11 +42,22 @@ front/
 - Keep hooks and stores inside their feature.
 - Components receive data through props and expose actions through callbacks.
 - Components must not access Zustand or adapters directly.
-- Colocate Storybook stories with reusable components.
 - Avoid global `hooks/`, `stores/`, `services/` and `utils/` folders.
-- Use React Native components and styling only.
-- Use `StyleSheet` and `style` props. No CSS framework or CSS-in-JS library.
-- Keep reusable UI compatible with Web, iOS and Android unless explicitly stated otherwise.
+- Use React Native components and `StyleSheet` only.
+- Keep reusable UI compatible with Web, iOS and Android.
+- Colocate Storybook stories with reusable components.
 - Penpot is the visual design source of truth.
 - Storybook is the source of truth for implemented reusable components.
-- Reuse existing components and design conventions before creating new ones.
+
+## Testing
+
+- Use Jest + `jest-expo`.
+- Use React Native Testing Library for component and feature behavior.
+- Test domain logic and Zod schemas with unit tests.
+- Test adapters with mocked `fetch` only.
+- Never perform real API calls in tests.
+- Mock adapters when testing features and components.
+- Prefer user-visible behavior over implementation details.
+- Storybook covers reusable component states and visual variants.
+- No E2E tests.
+- No snapshot tests unless explicitly justified.
