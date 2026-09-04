@@ -1,14 +1,11 @@
-import { useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { Button } from '@/components/ui/Button/Button';
 import { ScreenContainer } from '@/components/ui/ScreenContainer/ScreenContainer';
 import { MiamCompanions } from '@/components/ui/icons/icons';
-import { colors, radii, spacing, typography } from '@/components/ui/tokens';
+import { colors, spacing, typography } from '@/components/ui/tokens';
+import { GoogleSignIn } from '@/features/auth/GoogleSignIn';
 
 export default function WelcomeScreen() {
-  const router = useRouter();
-
   return (
     <ScreenContainer variant="center" gap={spacing.xxl}>
       <View style={styles.illustration}>
@@ -23,15 +20,9 @@ export default function WelcomeScreen() {
         </Text>
       </View>
 
-      <View style={styles.dots}>
-        <View style={[styles.dot, styles.dotActive]} />
-        <View style={styles.dot} />
-        <View style={styles.dot} />
-      </View>
-
       <View style={styles.actions}>
-        <Button variant="primary" fullWidth label="Commencer" onPress={() => router.push('/profile')} />
-        <Button variant="ghost" label="J'ai déjà un compte" onPress={() => router.push('/home')} />
+        <Text style={styles.body}>Connecte-toi ou crée ton compte pour commencer.</Text>
+        <GoogleSignIn />
       </View>
     </ScreenContainer>
   );
@@ -57,19 +48,6 @@ const styles = StyleSheet.create({
   body: {
     ...typography.bodyL,
     color: colors.inkMuted,
-  },
-  dots: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: radii.pill,
-    backgroundColor: colors.border,
-  },
-  dotActive: {
-    backgroundColor: colors.coral.DEFAULT,
   },
   actions: {
     gap: spacing.md,

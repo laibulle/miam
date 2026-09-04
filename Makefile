@@ -32,7 +32,7 @@ run-agent:
 
 
 docker-build:
-	docker build -t ${IMAGE_NAME} .
+	docker build --build-arg EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID -t ${IMAGE_NAME} .
 
 docker-run:
 	docker run --rm -it -p 8080:8080 --env-file app/.env ${IMAGE_NAME}

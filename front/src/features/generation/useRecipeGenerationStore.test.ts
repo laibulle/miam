@@ -1,6 +1,10 @@
+import { AuthenticationError } from '../../adapters/googleAuth';
+import { useAuthStore } from '../auth/useAuthStore';
 import { defaultProfile } from '../../domain/profile';
 import { generateRecipe } from '../../adapters/recipesApi';
 import { useRecipeGenerationStore } from './useRecipeGenerationStore';
+
+jest.mock('../../adapters/googleAuth', () => ({ AuthenticationError: class AuthenticationError extends Error {} }));
 
 jest.mock('../../adapters/recipesApi', () => ({
   generateRecipe: jest.fn(),
@@ -29,6 +33,8 @@ const finalRecipeFixture = {
 
 describe('useRecipeGenerationStore', () => {
   beforeEach(() => {
+    useRecipeGenerationStore.getState().reset();
+    useAuthStore.setState({ authenticated: true, account: { userId: 'google-user', credential: 'test-token' } });
     useRecipeGenerationStore.setState({
       promptText: 'Un plat healthy',
       status: 'idle',
@@ -49,7 +55,7 @@ describe('useRecipeGenerationStore', () => {
         activity_level: defaultProfile.activityLevel,
         age: defaultProfile.age,
         country: defaultProfile.country,
-      })
+      }), { userId: 'google-user', credential: 'test-token' }, expect.any(AbortSignal)
     );
     expect(useRecipeGenerationStore.getState().status).toBe('success');
     expect(useRecipeGenerationStore.getState().result?.recipe.name).toBe('Frites de patate douce au four');
@@ -72,4 +78,25 @@ describe('useRecipeGenerationStore', () => {
     expect(useRecipeGenerationStore.getState().status).toBe('error');
     expect(useRecipeGenerationStore.getState().errorMessage).toBeTruthy();
   });
+});
+
+it('returns to sign-in and clears the token after an API authentication error', async () => {
+  useAuthStore.setState({ authenticated: true, account: { userId: 'google-user', credential: 'test-token' } });
+  mockedGenerateRecipe.mockRejectedValue(new AuthenticationError('Token expired.'));
+  await useRecipeGenerationStore.getState().generate(defaultProfile);
+  expect(useAuthStore.getState()).toMatchObject({ authenticated: false, account: null, notice: 'Token expired.' });
+  expect(useRecipeGenerationStore.getState().result).toBeNull();
+});
+
+it('ignores a response from a request cancelled on logout', async () => {
+  useAuthStore.setState({ authenticated: true, account: { userId: 'google-user', credential: 'test-token' } });
+  let finish!: (value: unknown) => void;
+  mockedGenerateRecipe.mockReturnValue(new Promise(resolve => { finish = resolve; }));
+  const pending = useRecipeGenerationStore.getState().generate(defaultProfile);
+  const signal = mockedGenerateRecipe.mock.calls.at(-1)[2];
+  useRecipeGenerationStore.getState().reset();
+  expect(signal.aborted).toBe(true);
+  finish({ success: true, recipe: finalRecipeFixture });
+  await pending;
+  expect(useRecipeGenerationStore.getState()).toMatchObject({ status: 'idle', result: null });
 });

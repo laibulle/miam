@@ -1,5 +1,8 @@
 import { generateRecipe, RecipesApiError } from './recipesApi';
 import type { PromptInput } from '../domain/recipe';
+import { AuthenticationError } from './googleAuth';
+const accountId = `google-${'a'.repeat(64)}`;
+const account = { userId: accountId, credential: 'test-token' };
 
 const input: PromptInput = {
   prompt: 'Un plat healthy avec des frites et une sauce',
@@ -59,19 +62,35 @@ describe('generateRecipe', () => {
   it('creates an ADK session then calls /run with the matching identifiers', async () => {
     const mock = mockAdk();
     const signal = new AbortController().signal;
-    const result = await generateRecipe(input, signal);
+    const result = await generateRecipe(input, account, signal);
     const [sessionUrl, sessionOptions] = mock.mock.calls[0];
-    const userId = sessionUrl.match(/^\/apps\/app\/users\/(web-[a-z0-9-]+)\/sessions$/)?.[1];
-    expect(userId).toBeTruthy();
-    expect(sessionOptions).toEqual({ method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}', signal });
+    const userId = accountId;
+    expect(sessionUrl).toBe(`/apps/app/users/${accountId}/sessions`);
+    expect(sessionOptions).toEqual({ method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer test-token' }, credentials: 'omit', redirect: 'error', body: '{}', signal });
     expect(mock.mock.calls[1][0]).toBe('/run');
     expect(JSON.parse(mock.mock.calls[1][1].body)).toEqual({
       app_name: 'app', user_id: userId, session_id: 'session-123',
       new_message: { role: 'user', parts: [{ text: JSON.stringify(input) }] },
     });
     expect(mock.mock.calls[1][1].signal).toBe(signal);
+    expect(mock.mock.calls[1][1].headers.Authorization).toBe('Bearer test-token');
     expect(mock).toHaveBeenCalledTimes(2);
     expect(result.recipe?.recipe.name).toBe(validResponse.recipe.recipe.name);
+  });
+
+  it('does not call ADK without a credential', async () => {
+    const mock = mockAdk();
+    await expect(generateRecipe(input, { ...account, credential: '' })).rejects.toBeInstanceOf(AuthenticationError);
+    expect(mock).not.toHaveBeenCalled();
+  });
+
+  it.each([0, 1])('requests sign-in when the token expires at ADK stage %i', async stage => {
+    const mock = jest.fn();
+    if (stage) mock.mockResolvedValueOnce({ ok: true, json: async () => ({ id: 's' }) });
+    mock.mockResolvedValueOnce({ ok: false, status: 401 });
+    global.fetch = mock;
+    await expect(generateRecipe(input, account)).rejects.toBeInstanceOf(AuthenticationError);
+    expect(mock).toHaveBeenCalledTimes(stage + 1);
   });
 
   it('ignores other agents, partial events and thoughts', async () => {
@@ -82,7 +101,7 @@ describe('generateRecipe', () => {
       final,
       event({ success: true }, { partial: true }),
     ]);
-    const result = await generateRecipe(input);
+    const result = await generateRecipe(input, account);
     expect(result).toEqual(validResponse);
     expect(JSON.stringify(result)).not.toContain('private reasoning');
   });
@@ -90,19 +109,19 @@ describe('generateRecipe', () => {
   it('preserves the last editor failure instead of an earlier success', async () => {
     const failure = { success: false, description: 'Précise ta demande.' };
     mockAdk([event(validResponse), event(failure)]);
-    await expect(generateRecipe(input)).resolves.toEqual(failure);
+    await expect(generateRecipe(input, account)).resolves.toEqual(failure);
   });
 
   it('accepts optional durations omitted by ADK', async () => {
     const payload = JSON.parse(JSON.stringify(validResponse));
     delete payload.recipe.recipe.steps[0].duration;
     mockAdk([event(payload)]);
-    expect((await generateRecipe(input)).recipe?.recipe.steps[0].duration).toBeNull();
+    expect((await generateRecipe(input, account)).recipe?.recipe.steps[0].duration).toBeNull();
   });
 
   it.each([{}, { id: '' }, { id: null }])('stops on invalid session %j', async session => {
     const mock = mockAdk([], session);
-    await expect(generateRecipe(input)).rejects.toBeInstanceOf(RecipesApiError);
+    await expect(generateRecipe(input, account)).rejects.toBeInstanceOf(RecipesApiError);
     expect(mock).toHaveBeenCalledTimes(1);
   });
 
@@ -115,7 +134,7 @@ describe('generateRecipe', () => {
     [{ author: 'editor_agent', content: { parts: [{ text: 'not json' }] } }],
   ])('rejects missing or malformed final responses %j', async events => {
     mockAdk(events);
-    await expect(generateRecipe(input)).rejects.toBeInstanceOf(RecipesApiError);
+    await expect(generateRecipe(input, account)).rejects.toBeInstanceOf(RecipesApiError);
   });
 
   it.each([0, 1])('handles an HTTP failure at ADK stage %i', async stage => {
@@ -123,7 +142,7 @@ describe('generateRecipe', () => {
     if (stage) mock.mockResolvedValueOnce({ ok: true, json: async () => ({ id: 's' }) });
     mock.mockResolvedValueOnce({ ok: false });
     global.fetch = mock as unknown as typeof fetch;
-    await expect(generateRecipe(input)).rejects.toBeInstanceOf(RecipesApiError);
+    await expect(generateRecipe(input, account)).rejects.toBeInstanceOf(RecipesApiError);
     expect(mock).toHaveBeenCalledTimes(stage + 1);
   });
 
@@ -132,19 +151,19 @@ describe('generateRecipe', () => {
     if (stage) mock.mockResolvedValueOnce({ ok: true, json: async () => ({ id: 's' }) });
     mock.mockRejectedValueOnce(new Error('network down'));
     global.fetch = mock as unknown as typeof fetch;
-    await expect(generateRecipe(input)).rejects.toBeInstanceOf(RecipesApiError);
+    await expect(generateRecipe(input, account)).rejects.toBeInstanceOf(RecipesApiError);
   });
 
   it('handles invalid JSON from ADK', async () => {
     global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => { throw new SyntaxError('invalid JSON'); } });
-    await expect(generateRecipe(input)).rejects.toBeInstanceOf(RecipesApiError);
+    await expect(generateRecipe(input, account)).rejects.toBeInstanceOf(RecipesApiError);
   });
 
   it('does not send a request when already aborted', async () => {
     const mock = mockAdk();
     const controller = new AbortController();
     controller.abort();
-    await expect(generateRecipe(input, controller.signal)).rejects.toMatchObject({ name: 'AbortError' });
+    await expect(generateRecipe(input, account, controller.signal)).rejects.toMatchObject({ name: 'AbortError' });
     expect(mock).not.toHaveBeenCalled();
   });
 
@@ -155,7 +174,7 @@ describe('generateRecipe', () => {
       return { id: 'session-123' };
     } });
     global.fetch = mock;
-    await expect(generateRecipe(input, controller.signal)).rejects.toMatchObject({ name: 'AbortError' });
+    await expect(generateRecipe(input, account, controller.signal)).rejects.toMatchObject({ name: 'AbortError' });
     expect(mock).toHaveBeenCalledTimes(1);
   });
 });

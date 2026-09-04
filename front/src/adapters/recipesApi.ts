@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { recipeResponseSchema, type PromptInput, type RecipeResponse } from '../domain/recipe';
+import { AuthenticationError, type GoogleAccount } from './googleAuth';
 
 // Same ADK routes in every environment. Expo only forwards them during web development.
 const API_BASE_URL = (process.env.EXPO_PUBLIC_API_URL ?? '').replace(/\/$/, '');
@@ -27,12 +28,14 @@ function checkAborted(signal?: AbortSignal) {
   }
 }
 
-async function postAdk(path: string, body: unknown, signal?: AbortSignal): Promise<unknown> {
+async function postAdk(path: string, body: unknown, credential: string, signal?: AbortSignal): Promise<unknown> {
   let response: Response;
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${credential}` },
+      credentials: 'omit',
+      redirect: 'error',
       body: JSON.stringify(body),
       signal,
     });
@@ -40,6 +43,7 @@ async function postAdk(path: string, body: unknown, signal?: AbortSignal): Promi
     if (signal?.aborted) throw error;
     throw new RecipesApiError('Impossible de contacter Miam. Vérifie ta connexion et réessaie.');
   }
+  if (response.status === 401) throw new AuthenticationError('Your session has expired. Please sign in again.');
   if (!response.ok) {
     throw new RecipesApiError("Miam n'a pas réussi à générer de recette. Réessaie dans un instant.");
   }
@@ -51,11 +55,12 @@ async function postAdk(path: string, body: unknown, signal?: AbortSignal): Promi
   }
 }
 
-export async function generateRecipe(input: PromptInput, signal?: AbortSignal): Promise<RecipeResponse> {
+export async function generateRecipe(input: PromptInput, account: GoogleAccount, signal?: AbortSignal): Promise<RecipeResponse> {
   checkAborted(signal);
-  const userId = `web-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  if (!account?.credential || !account.userId) throw new AuthenticationError('Authentication required.');
+  const { userId, credential } = account;
   const session = sessionSchema.safeParse(await postAdk(
-    `/apps/${encodeURIComponent(APP_NAME)}/users/${encodeURIComponent(userId)}/sessions`, {}, signal
+    `/apps/${encodeURIComponent(APP_NAME)}/users/${encodeURIComponent(userId)}/sessions`, {}, credential, signal
   ));
   if (!session.success) throw new RecipesApiError('La session Miam est invalide.');
 
@@ -65,7 +70,7 @@ export async function generateRecipe(input: PromptInput, signal?: AbortSignal): 
     user_id: userId,
     session_id: session.data.id,
     new_message: { role: 'user', parts: [{ text: JSON.stringify(input) }] },
-  }, signal));
+  }, credential, signal));
   if (!events.success) throw new RecipesApiError('La réponse de Miam est invalide.');
 
   const editor = [...events.data].reverse().find(event => event.author === 'editor_agent' && !event.partial);

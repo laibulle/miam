@@ -17,18 +17,15 @@ export interface ScreenContainerProps {
 
 /** Fluid on mobile, with a wider centered reading column on desktop. */
 export function ScreenContainer({ children, topSlot, variant = 'scroll', gap = spacing.lg }: ScreenContainerProps) {
-  const content =
-    variant === 'center' ? (
-      <View style={[styles.inner, styles.innerCentered, { gap }]}>{children}</View>
-    ) : (
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={[styles.inner, { gap }]}
-        showsVerticalScrollIndicator={false}
-      >
-        {children}
-      </ScrollView>
-    );
+  const content = (
+    <ScrollView
+      style={styles.scrollView}
+      contentContainerStyle={[styles.inner, variant === 'center' && styles.innerCentered, { gap }]}
+      showsVerticalScrollIndicator={false}
+    >
+      {children}
+    </ScrollView>
+  );
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
@@ -67,7 +64,7 @@ const styles = StyleSheet.create({
     padding: spacing.xxl,
   },
   innerCentered: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
   },
 });
