@@ -34,5 +34,5 @@ addopts = [
     "--cov=app",
     "--cov-report=term-missing",
     "--cov-report=xml:coverage.xml",
-    "--cov-fail-under=53",
+    "--cov-fail-under=85",
 ]
