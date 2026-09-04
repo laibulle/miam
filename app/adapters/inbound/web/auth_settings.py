@@ -11,8 +11,11 @@ class AuthSettings:
 
     @classmethod
     def from_env(cls):
+        client_id = os.environ["GOOGLE_WEB_CLIENT_ID"].strip()
+        if not client_id:
+            raise RuntimeError("GOOGLE_WEB_CLIENT_ID must be configured")
         return cls(
-            client_id=os.getenv("GOOGLE_WEB_CLIENT_ID", "").strip(),
+            client_id=client_id,
             allowed_origins=frozenset(
                 origin.strip().rstrip("/")
                 for origin in os.getenv("AUTH_ALLOWED_ORIGINS", "").split(",")

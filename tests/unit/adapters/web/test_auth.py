@@ -1,6 +1,5 @@
 import json
 import time
-from dataclasses import replace
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -10,7 +9,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
 from google.auth import crypt, jwt
-from google.auth.exceptions import TransportError
+from google.auth.exceptions import GoogleAuthError, TransportError
 from starlette.responses import StreamingResponse
 from starlette.websockets import WebSocketDisconnect
 
@@ -89,28 +88,36 @@ def test_invalid_authentication_header_rejected_before_google(setup, header):
     verify.assert_not_called()
 
 
-@pytest.mark.parametrize(
-    "error, status",
-    [(ValueError("private token data"), 401), (TransportError("private details"), 503)],
-)
-def test_failed_verification_blocks_account_and_adk(setup, error, status):
+def test_invalid_token_blocks_account_and_adk(setup):
     client, _ = setup
+    error = ValueError("private token data")
     with patch("app.adapters.inbound.web.auth.verify_google_credential", side_effect=error):
         for response in (
             client.get("/auth/me", headers=HEADERS),
             client.post("/run", headers=HEADERS, json={"user_id": OWNER}),
         ):
-            assert response.status_code == status
+            assert response.status_code == 401
             assert "private" not in response.text
             assert "set-cookie" not in response.headers
 
 
-def test_missing_configuration_stays_closed(setup):
-    _, settings = setup
-    app = FastAPI()
-    app.include_router(auth_router(replace(settings, client_id="")))
-    with TestClient(app) as client:
-        assert client.get("/auth/me", headers=HEADERS).status_code == 503
+def test_google_network_error_is_not_hidden(setup):
+    client, _ = setup
+    error = TransportError("private details")
+    with (
+        patch("app.adapters.inbound.web.auth.verify_google_credential", side_effect=error),
+        pytest.raises(TransportError, match="private details"),
+    ):
+        client.get("/auth/me", headers=HEADERS)
+
+
+def test_missing_configuration_crashes_at_startup(monkeypatch):
+    monkeypatch.delenv("GOOGLE_WEB_CLIENT_ID", raising=False)
+    with pytest.raises(KeyError):
+        AuthSettings.from_env()
+    monkeypatch.setenv("GOOGLE_WEB_CLIENT_ID", "")
+    with pytest.raises(RuntimeError, match="must be configured"):
+        AuthSettings.from_env()
 
 
 @pytest.mark.parametrize(
@@ -228,6 +235,10 @@ def test_real_google_verifier_rejects_invalid_jwts_without_network(setup, signin
     response = SimpleNamespace(status=200, data=json.dumps({"test": public}).encode())
     with patch("app.adapters.outbound.google_identity._google_request") as transport:
         transport.return_value = response
+        if change == "iss":
+            with pytest.raises(GoogleAuthError):
+                client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
+            return
         result = client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
     assert result.status_code == (200 if change is None else 401)
     assert "set-cookie" not in result.headers
