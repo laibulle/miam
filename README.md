@@ -49,6 +49,7 @@ npm run build:web
 - [x] GenAI UI
 - [ ] Add Eval
 - [ ] Add food facts DB for procedural accurate food fact computation
+- [ ] User settings store
 - [ ] Define guardrails
 
 
