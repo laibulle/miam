@@ -150,11 +150,3 @@ src/
     ui/           generic stateless components (Button, Chip, Badge, ...)
     domain/       domain-specific stateless components (IngredientRow, ...)
 ```
-
-## Screens
-
-1. `/` — Bienvenue (onboarding welcome)
-2. `/profile` — Profil & réglages (also reachable as settings from Accueil)
-3. `/home` — Accueil (prompt composer, one recipe generated on demand)
-4. `/refine` — Affiner la demande (per-generation refinements)
-5. `/recipe` — Recette (generated recipe, steps with inline/floating timers)
