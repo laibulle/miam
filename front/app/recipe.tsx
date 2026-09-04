@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/ui/Button/Button';
 import { IconButton } from '@/components/ui/IconButton/IconButton';
-import { BackIcon, HeartIcon } from '@/components/ui/icons/icons';
+import { BackIcon } from '@/components/ui/icons/icons';
 import { InlineStatus } from '@/components/ui/InlineStatus/InlineStatus';
 import { ScreenContainer } from '@/components/ui/ScreenContainer/ScreenContainer';
 import { TimerFloatingBar } from '@/components/ui/TimerFloatingBar/TimerFloatingBar';
@@ -21,7 +21,6 @@ import { useRecipeGenerationStore } from '@/features/generation/useRecipeGenerat
 export default function RecipeScreen() {
   const router = useRouter();
   const result = useRecipeGenerationStore((state) => state.result);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [activeStepIndex, setActiveStepIndex] = useState<number | null>(null);
   const countdown = useCountdown();
 
@@ -61,12 +60,6 @@ export default function RecipeScreen() {
     <ScreenContainer topSlot={timerBar}>
       <View style={styles.header}>
         <IconButton icon={<BackIcon />} accessibilityLabel="Retour" onPress={() => router.back()} />
-        <IconButton
-          icon={<HeartIcon color={isFavorite ? colors.coral.DEFAULT : colors.border} />}
-          tint={colors.coral.tint}
-          accessibilityLabel="Ajouter aux favoris"
-          onPress={() => setIsFavorite((prev) => !prev)}
-        />
       </View>
 
       <Text style={styles.eyebrow}>SUGGESTION DE MIAM</Text>
@@ -150,7 +143,6 @@ export default function RecipeScreen() {
 const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
   },
   eyebrow: {
     ...typography.label,

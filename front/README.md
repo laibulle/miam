@@ -17,11 +17,22 @@ npm run storybook      # On-device Storybook (component catalogue)
 ```
 
 The Docker image builds this export automatically. FastAPI serves the exported
-pages and assets at `/` with direct page links supported. The development-only
-`/api/recipes` proxy described below is not part of a static export; production
-recipe generation needs a backend implementing that endpoint.
+pages and assets at `/` and exposes the standard ADK API on the same origin.
 
-In dev, the client calls this app's own `/api/recipes` route (`app/api/recipes+api.ts`), which proxies server-side to the ADK backend (session create → `/run` → pull the `editor_agent` event) — this avoids both the cross-origin CORS preflight the ADK server rejects, and needing the client to know ADK's session/run protocol at all. Point it at your backend with `ADK_API_URL` (defaults to `http://127.0.0.1:8000`) and `ADK_APP_NAME` (defaults to `app`, matching `agents_dir`). To bypass the proxy and call a backend directly (e.g. from a native build with no dev-server proxy), set `EXPO_PUBLIC_API_URL` instead — note that target would then need to speak the `POST /api/recipes` contract itself, not raw ADK.
+The client adapter calls `POST /apps/{app_name}/users/{user_id}/sessions`, then
+`POST /run`, and validates the final `editor_agent` event. The application name
+defaults to `app`; set `EXPO_PUBLIC_ADK_APP_NAME` to target another ADK app.
+
+In Expo web development, `app/run+api.ts` and the matching session API route
+transparently forward the same paths, bodies and responses. They contain no
+recipe logic. Set server-only `ADK_API_URL` to select the backend (default
+`http://127.0.0.1:8000`). These proxy routes are not included in the static export;
+production requests go straight to FastAPI's existing ADK routes.
+
+For a native app or a separately hosted frontend, set `EXPO_PUBLIC_API_URL` to
+the ADK server base URL. Public Expo variables are build-time configuration and
+must never contain credentials. A separately hosted web frontend requires the
+backend to allow its origin.
 
 ## Structure
 

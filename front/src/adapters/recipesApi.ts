@@ -1,45 +1,88 @@
+import { z } from 'zod';
+
 import { recipeResponseSchema, type PromptInput, type RecipeResponse } from '../domain/recipe';
 
-/**
- * API contract expected from the backend (out of scope here, see CLAUDE.md):
- * POST {API_BASE_URL}/api/recipes
- *   body: PromptInput (see src/domain/recipe.ts, mirrors app/domain/models.py)
- *   response: RecipeResponse
- *
- * Defaults to '' (same origin): in dev this hits this app's own
- * app/api/recipes+api.ts route, which proxies server-side to the backend —
- * avoiding a cross-origin request (and the CORS preflight it triggers)
- * straight from the browser. Set EXPO_PUBLIC_API_URL to call a backend
- * directly instead (e.g. from a native build, where there's no dev-server
- * proxy to rely on).
- */
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
+// Same ADK routes in every environment. Expo only forwards them during web development.
+const API_BASE_URL = (process.env.EXPO_PUBLIC_API_URL ?? '').replace(/\/$/, '');
+const APP_NAME = process.env.EXPO_PUBLIC_ADK_APP_NAME ?? 'app';
+const sessionSchema = z.object({ id: z.string().min(1) });
+const eventsSchema = z.array(z.object({
+  author: z.string(),
+  partial: z.boolean().nullish(),
+  content: z.object({
+    parts: z.array(z.object({
+      text: z.string().nullish(),
+      thought: z.boolean().nullish(),
+    })).nullish(),
+  }).nullish(),
+}));
 
 export class RecipesApiError extends Error {}
 
-export async function generateRecipe(input: PromptInput, signal?: AbortSignal): Promise<RecipeResponse> {
+function checkAborted(signal?: AbortSignal) {
+  if (signal?.aborted) {
+    const error = new Error('Requête annulée.');
+    error.name = 'AbortError';
+    throw error;
+  }
+}
+
+async function postAdk(path: string, body: unknown, signal?: AbortSignal): Promise<unknown> {
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/recipes`, {
+    response = await fetch(`${API_BASE_URL}${path}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input),
+      body: JSON.stringify(body),
       signal,
     });
-  } catch {
+  } catch (error) {
+    if (signal?.aborted) throw error;
     throw new RecipesApiError('Impossible de contacter Miam. Vérifie ta connexion et réessaie.');
   }
-
   if (!response.ok) {
     throw new RecipesApiError("Miam n'a pas réussi à générer de recette. Réessaie dans un instant.");
   }
-
-  const json: unknown = await response.json();
-  const parsed = recipeResponseSchema.safeParse(json);
-  if (!parsed.success) {
+  try {
+    return await response.json();
+  } catch (error) {
+    if (signal?.aborted) throw error;
     throw new RecipesApiError('La réponse de Miam est invalide.');
   }
+}
 
+export async function generateRecipe(input: PromptInput, signal?: AbortSignal): Promise<RecipeResponse> {
+  checkAborted(signal);
+  const userId = `web-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const session = sessionSchema.safeParse(await postAdk(
+    `/apps/${encodeURIComponent(APP_NAME)}/users/${encodeURIComponent(userId)}/sessions`, {}, signal
+  ));
+  if (!session.success) throw new RecipesApiError('La session Miam est invalide.');
+
+  checkAborted(signal);
+  const events = eventsSchema.safeParse(await postAdk('/run', {
+    app_name: APP_NAME,
+    user_id: userId,
+    session_id: session.data.id,
+    new_message: { role: 'user', parts: [{ text: JSON.stringify(input) }] },
+  }, signal));
+  if (!events.success) throw new RecipesApiError('La réponse de Miam est invalide.');
+
+  const editor = [...events.data].reverse().find(event => event.author === 'editor_agent' && !event.partial);
+  const text = editor?.content?.parts?.filter(part => !part.thought).map(part => part.text ?? '').join('');
+  if (!text) throw new RecipesApiError("Miam n'a pas retourné de recette exploitable.");
+
+  let result: unknown;
+  try {
+    result = JSON.parse(text);
+  } catch {
+    throw new RecipesApiError('La réponse de Miam est invalide.');
+  }
+  const parsed = recipeResponseSchema.safeParse(result);
+  if (!parsed.success || (parsed.data.success
+    ? !parsed.data.recipe || parsed.data.description != null
+    : parsed.data.recipe != null || !parsed.data.description?.trim())) {
+    throw new RecipesApiError('La réponse de Miam est invalide.');
+  }
   return parsed.data;
 }
