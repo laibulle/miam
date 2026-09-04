@@ -1,10 +1,8 @@
 from pathlib import Path
 
-from fastapi import Request
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from google.adk.cli.fast_api import get_fast_api_app
+
+from app.adapters.inbound.web.static_files import ExpoStaticFiles
 
 WEB_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = WEB_DIR.parents[3]
@@ -14,11 +12,9 @@ app = get_fast_api_app(
     web=False,
 )
 
-app.mount("/static", StaticFiles(directory=WEB_DIR / "static"), name="static")
-
-templates = Jinja2Templates(directory=WEB_DIR / "templates")
-
-
-@app.get("/", response_class=HTMLResponse)
-async def index(request: Request):
-    return templates.TemplateResponse(request, name="index.html")
+# Mount last so the ADK API and FastAPI documentation keep their routes.
+app.mount(
+    "/",
+    ExpoStaticFiles(directory=PROJECT_ROOT / "front" / "dist", html=True, check_dir=False),
+    name="frontend",
+)

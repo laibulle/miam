@@ -1,4 +1,4 @@
-name: Python test
+name: Tests
 
 on:
   push:
@@ -30,3 +30,31 @@ jobs:
           files: ./coverage.xml
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  frontend:
+    name: Frontend tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: front
+    env:
+      CI: "true"
+      EXPO_NO_TELEMETRY: "1"
+      EXPO_NO_DOTENV: "1"
+
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: front/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Run frontend tests
+        run: npm test -- --ci --runInBand

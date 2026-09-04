@@ -27,6 +27,15 @@ make sync
 make dev
 ```
 
+The web UI is the Expo app in `front/`. Build it before opening FastAPI in a
+browser (and rebuild after frontend changes):
+
+```bash
+cd front
+npm ci
+npm run build:web
+```
+
 ## Roadmap 🛣️
 
 - [x] Setup project architecture
