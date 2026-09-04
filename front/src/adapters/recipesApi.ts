@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { recipeResponseSchema, type PromptInput, type RecipeResponse } from '../domain/recipe';
+import { getCurrentGoogleSession } from './googleSession';
 
 // Same ADK routes in every environment. Expo only forwards them during web development.
 const API_BASE_URL = (process.env.EXPO_PUBLIC_API_URL ?? '').replace(/\/$/, '');
@@ -32,7 +33,8 @@ async function postAdk(path: string, body: unknown, signal?: AbortSignal): Promi
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'Miam' },
+      credentials: 'same-origin',
       body: JSON.stringify(body),
       signal,
     });
@@ -53,7 +55,10 @@ async function postAdk(path: string, body: unknown, signal?: AbortSignal): Promi
 
 export async function generateRecipe(input: PromptInput, signal?: AbortSignal): Promise<RecipeResponse> {
   checkAborted(signal);
-  const userId = `web-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const account = await getCurrentGoogleSession(signal);
+  if (!account) throw new RecipesApiError('Connecte-toi pour générer une recette.');
+  checkAborted(signal);
+  const userId = account.user_id;
   const session = sessionSchema.safeParse(await postAdk(
     `/apps/${encodeURIComponent(APP_NAME)}/users/${encodeURIComponent(userId)}/sessions`, {}, signal
   ));

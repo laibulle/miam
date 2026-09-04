@@ -12,7 +12,6 @@ RUN npm ci --ignore-scripts --no-audit --no-fund
 COPY front/ ./
 # Public Google OAuth configuration is embedded by Expo at build time.
 ARG EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID
-ARG EXPO_PUBLIC_GOOGLE_SESSION_PATH
 RUN npm run build:web
 
 FROM python:3.14-slim-bookworm

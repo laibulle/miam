@@ -1,5 +1,9 @@
 import { generateRecipe, RecipesApiError } from './recipesApi';
 import type { PromptInput } from '../domain/recipe';
+import { getCurrentGoogleSession } from './googleSession';
+
+jest.mock('./googleSession', () => ({ getCurrentGoogleSession: jest.fn() }));
+const accountId = `google-${'a'.repeat(64)}`;
 
 const input: PromptInput = {
   prompt: 'Un plat healthy avec des frites et une sauce',
@@ -51,6 +55,10 @@ function mockAdk(events: unknown = [event(validResponse)], session: unknown = { 
 describe('generateRecipe', () => {
   const originalFetch = global.fetch;
 
+  beforeEach(() => {
+    (getCurrentGoogleSession as jest.Mock).mockReset().mockResolvedValue({ user_id: accountId });
+  });
+
   afterEach(() => {
     global.fetch = originalFetch;
     jest.restoreAllMocks();
@@ -61,9 +69,9 @@ describe('generateRecipe', () => {
     const signal = new AbortController().signal;
     const result = await generateRecipe(input, signal);
     const [sessionUrl, sessionOptions] = mock.mock.calls[0];
-    const userId = sessionUrl.match(/^\/apps\/app\/users\/(web-[a-z0-9-]+)\/sessions$/)?.[1];
-    expect(userId).toBeTruthy();
-    expect(sessionOptions).toEqual({ method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}', signal });
+    const userId = accountId;
+    expect(sessionUrl).toBe(`/apps/app/users/${accountId}/sessions`);
+    expect(sessionOptions).toEqual({ method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'Miam' }, credentials: 'same-origin', body: '{}', signal });
     expect(mock.mock.calls[1][0]).toBe('/run');
     expect(JSON.parse(mock.mock.calls[1][1].body)).toEqual({
       app_name: 'app', user_id: userId, session_id: 'session-123',
@@ -72,6 +80,13 @@ describe('generateRecipe', () => {
     expect(mock.mock.calls[1][1].signal).toBe(signal);
     expect(mock).toHaveBeenCalledTimes(2);
     expect(result.recipe?.recipe.name).toBe(validResponse.recipe.recipe.name);
+  });
+
+  it('does not call ADK without a server-confirmed account', async () => {
+    (getCurrentGoogleSession as jest.Mock).mockResolvedValue(null);
+    const mock = mockAdk();
+    await expect(generateRecipe(input)).rejects.toBeInstanceOf(RecipesApiError);
+    expect(mock).not.toHaveBeenCalled();
   });
 
   it('ignores other agents, partial events and thoughts', async () => {

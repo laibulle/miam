@@ -1,12 +1,21 @@
+import { z } from 'zod';
+
 const UNAVAILABLE = 'La connexion Google est indisponible pour le moment.';
+const currentSessionSchema = z.object({ user_id: z.string().regex(/^google-[a-f0-9]{64}$/) });
+
+export async function getCurrentGoogleSession(signal?: AbortSignal) {
+  const response = await fetch('/auth/session', {
+    credentials: 'same-origin', cache: 'no-store', redirect: 'error', signal,
+  });
+  if (response.status === 401) return null;
+  if (!response.ok) throw new Error(UNAVAILABLE);
+  return currentSessionSchema.parse(await response.json());
+}
 
 export function getGoogleSignInConfig() {
   const clientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim();
-  const sessionPath = process.env.EXPO_PUBLIC_GOOGLE_SESSION_PATH?.trim();
-  // A deliberately configured, same-origin endpoint only. No guessed auth route.
-  if (!clientId || !/^[a-zA-Z0-9_-]+\.apps\.googleusercontent\.com$/.test(clientId)
-    || !sessionPath || !/^\/(?!\/)[a-zA-Z0-9/_-]+$/.test(sessionPath)) return null;
-  return { clientId, sessionPath };
+  if (!clientId || !/^[a-zA-Z0-9_-]+\.apps\.googleusercontent\.com$/.test(clientId)) return null;
+  return { clientId };
 }
 
 /** Contract: verify the Google ID token, set an HttpOnly session cookie, return 204. */
@@ -15,7 +24,7 @@ export async function createGoogleSession(credential: string, signal: AbortSigna
   if (!config) throw new Error(UNAVAILABLE);
   let response: Response;
   try {
-    response = await fetch(config.sessionPath, {
+    response = await fetch('/auth/google', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'Miam' },
       credentials: 'same-origin',
