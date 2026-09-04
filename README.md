@@ -27,6 +27,29 @@ make sync
 make dev
 ```
 
+The web UI is the Expo app in `front/`. Build it before opening FastAPI in a
+browser (and rebuild after frontend changes):
+
+```bash
+cd front
+npm ci
+npm run build:web
+```
+
+FastAPI serves `front/dist/` at `/`, including direct links such as `/home` and
+`/recipe`. ADK routes and `/docs` remain available. The previous HTML UI has been
+removed.
+
+`make docker-build` builds the Expo web export in a Node stage and copies only
+the generated frontend into the Python image. `make docker-run` serves it on
+port 8080. Secrets must be provided at runtime; local environment files and ADK
+sessions are excluded from the build context.
+
+The Expo `/api/recipes` proxy runs only in its development server. A static
+export does not execute that route: recipe generation in the Docker-served UI
+requires a backend implementing `POST /api/recipes`. Serving these files does
+not add that API adapter; the existing ADK API remains unchanged.
+
 ## Roadmap 🛣️
 
 - [x] Setup project architecture
