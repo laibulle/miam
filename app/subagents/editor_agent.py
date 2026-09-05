@@ -30,6 +30,8 @@ editor_agent = Agent(
     Match the selected recipe to each expert evaluation by its original name.
     Copy the scores exactly. Never invent, average, or revise them.
     Summarize each expert's reasoning and relevant recommendations faithfully.
+    Include relevant user_instructions in the corresponding expert quote,
+    keeping only advice for the selected recipe that fits the chef's final version.
     Explain that the scores evaluate the initial suggestion, before the chef's
     adjustments; do not claim the final recipe was reassessed.
 

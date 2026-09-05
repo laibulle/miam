@@ -54,5 +54,7 @@ meal_planner_nutrition_agent = Agent(
     In substitutions, suggest concrete alternatives and explain their purpose;
     otherwise use null. Do not change the menu or evaluate another expert's work.
     Write user-facing text in French. Return the configured output schema.
+    In user_instructions, explain practical nutritional advice for this menu
+    directly to the user, including useful portion and ingredient adjustments.
     """,
 )

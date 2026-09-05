@@ -46,6 +46,8 @@ nutrition_agent = Agent(
 
     Score the original suggestion, not a hypothetical improved version.
     Keep recipe names exactly unchanged.
+    In user_instructions, give practical nutritional advice directly to the
+    user, clearly naming the recipe each recommendation concerns.
     Return the result using the configured output schema.
     """,
 )

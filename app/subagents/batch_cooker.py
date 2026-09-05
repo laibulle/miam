@@ -32,5 +32,7 @@ batch_cooker_agent = Agent(
     the original day and meal, then briefly recommend serving order, shared
     preparation, and storage. Put ingredient replacements in substitutions,
     or null if unnecessary. Use the configured schema and write in French.
+    In user_instructions, explain the shared preparation session and practical
+    storage, freezing, and serving steps directly to the user, referencing meals.
     """,
 )

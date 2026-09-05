@@ -58,5 +58,7 @@ meal_planner_gut_health_agent = Agent(
     Score the original proposal, not an improved hypothetical version.
     In substitutions, name useful alternatives and their purpose; otherwise
     use null. Do not modify the menu or reuse another expert's scores.
+    In user_instructions, give practical advice directly to the user on fiber
+    sources and plant variety in this menu, without medical promises.
     """,
 )

@@ -1,13 +1,13 @@
 from google.adk import Agent
 
-from app.domain.models import WeeklyMenu
+from app.domain.models import FinalWeeklyMenu
 from app.subagents.config import MODEL_NAME
 
 menu_editor_agent = Agent(
     name="menu_editor_agent",
     mode="single_turn",
     model=MODEL_NAME,
-    output_schema=WeeklyMenu,
+    output_schema=FinalWeeklyMenu,
     output_key="final_non_translated_menu",
     instruction="""
     Edit the weekly menu into its final version in English.
@@ -25,7 +25,10 @@ menu_editor_agent = Agent(
     Resolve conflicts in favor of food safety and user constraints.
 
     Update titles and ingredient quantities consistently with accepted changes.
-    Return meals in chronological order using the configured schema, without
-    scores, commentary, or detailed cooking instructions.
+    Merge the experts' user_instructions into practical guidance for the user,
+    removing duplicates and advice that no longer fits the edited menu. Update
+    meal references after reordering and preserve necessary storage guidance.
+    Return chronological meals and user_instructions in the configured schema,
+    without scores or full recipes.
     """,
 )

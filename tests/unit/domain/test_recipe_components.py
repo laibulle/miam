@@ -86,6 +86,7 @@ def test_recipes_suggestions_parse_nested_ingredients():
 )
 def test_expert_scores_accept_nullable_recommendations(improvements, substitutions):
     payload = {
+        "user_instructions": "Serve with a side of vegetables.",
         "scores": [
             {
                 "recipe_name": "Tomato pasta",

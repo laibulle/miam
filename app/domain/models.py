@@ -12,6 +12,7 @@ class RecipeSuggestion(BaseModel):
 
 class ExpertRecipesScore(BaseModel):
     scores: list[ExpertRecipeScore]
+    user_instructions: str = Field(description="Practical advice addressed to the user.")
 
 
 class ExpertRecipeScore(BaseModel):
@@ -124,3 +125,9 @@ class PlannedMeal(BaseModel):
 
 class WeeklyMenu(BaseModel):
     meals: list[PlannedMeal] = Field(min_length=1)
+
+
+class FinalWeeklyMenu(WeeklyMenu):
+    user_instructions: str = Field(
+        description="Consolidated expert advice consistent with the final menu."
+    )
