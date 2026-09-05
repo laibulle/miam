@@ -26,7 +26,7 @@ export function ComposerCard({
         accessibilityLabel="Décris l'envie du moment"
         style={styles.input}
         multiline
-        placeholder="Un plat healthy avec des frites et une sauce…"
+        placeholder="Une recette avec des courgettes, ou mes dîners pour la semaine…"
         placeholderTextColor={colors.borderFaint}
         value={value}
         onChangeText={onChangeText}

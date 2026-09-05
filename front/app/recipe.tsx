@@ -14,6 +14,7 @@ import { IngredientRow } from '@/components/domain/IngredientRow/IngredientRow';
 import { NutritionPanel } from '@/components/domain/NutritionPanel/NutritionPanel';
 import { RecipeMetaRow } from '@/components/domain/RecipeMetaRow/RecipeMetaRow';
 import { StepRow } from '@/components/domain/StepRow/StepRow';
+import { MealPlanView } from '@/components/domain/MealPlanView/MealPlanView';
 import { formatCountdown } from '@/domain/time';
 import { useCountdown } from '@/features/timer/useCountdown';
 import { useRecipeGenerationStore } from '@/features/generation/useRecipeGenerationStore';
@@ -21,13 +22,25 @@ import { useRecipeGenerationStore } from '@/features/generation/useRecipeGenerat
 export default function RecipeScreen() {
   const router = useRouter();
   const result = useRecipeGenerationStore((state) => state.result);
+  const menu = useRecipeGenerationStore((state) => state.menu);
   const [activeStepIndex, setActiveStepIndex] = useState<number | null>(null);
   const countdown = useCountdown();
+
+  if (menu) {
+    return (
+      <ScreenContainer gap={spacing.sm}>
+        <View style={styles.header}>
+          <IconButton icon={<BackIcon />} accessibilityLabel="Retour" onPress={() => router.back()} />
+        </View>
+        <MealPlanView menu={menu} />
+      </ScreenContainer>
+    );
+  }
 
   if (!result) {
     return (
       <ScreenContainer variant="center">
-        <InlineStatus tone="error" message="Aucune recette à afficher pour le moment." />
+        <InlineStatus tone="error" message="Aucun résultat à afficher pour le moment." />
         <Button variant="secondary" label="Retour à l'accueil" onPress={() => router.replace('/home')} />
       </ScreenContainer>
     );
