@@ -40,7 +40,7 @@ const validResponse = {
 };
 
 function event(payload: unknown, extra = {}) {
-  return { author: 'editor_agent', content: { parts: [{ text: JSON.stringify(payload) }] }, ...extra };
+  return { author: 'french_translator_agent', content: { parts: [{ text: JSON.stringify(payload) }] }, ...extra };
 }
 
 function mockAdk(events: unknown = [event(validResponse)], session: unknown = { id: 'session-123' }) {
@@ -98,6 +98,7 @@ describe('generateRecipe', () => {
     final.content.parts.unshift({ text: 'private reasoning', thought: true } as typeof final.content.parts[number]);
     mockAdk([
       { author: 'chief_agent', content: { parts: [{ text: 'intermediate' }] } },
+      event({ success: false, description: 'English intermediate result' }, { author: 'editor_agent' }),
       final,
       event({ success: true }, { partial: true }),
     ]);
@@ -106,7 +107,7 @@ describe('generateRecipe', () => {
     expect(JSON.stringify(result)).not.toContain('private reasoning');
   });
 
-  it('preserves the last editor failure instead of an earlier success', async () => {
+  it('preserves the last translator failure instead of an earlier success', async () => {
     const failure = { success: false, description: 'Précise ta demande.' };
     mockAdk([event(validResponse), event(failure)]);
     await expect(generateRecipe(input, account)).resolves.toEqual(failure);
@@ -119,6 +120,21 @@ describe('generateRecipe', () => {
     expect((await generateRecipe(input, account)).recipe?.recipe.steps[0].duration).toBeNull();
   });
 
+  it('decodes accented text from the translator, including nested fields', async () => {
+    const payload = JSON.parse(JSON.stringify(validResponse));
+    payload.recipe.recipe.name = 'P&#226;tes &agrave; la cr&#xE8;me';
+    payload.recipe.recipe.steps[0].long_description = '&Eacute;goutter les p&amp;#226;tes.';
+    payload.recipe.food_facts.per_serving = {
+      energy_kcal: 600, fat_g: 20, carb_g: 80, protein_g: 24, fiber_g: 12.5,
+    };
+    mockAdk([event(payload)]);
+    const result = await generateRecipe(input, account);
+    expect(result.recipe?.recipe.name).toBe('Pâtes à la crème');
+    expect(result.recipe?.recipe.steps[0].long_description).toBe('Égoutter les pâtes.');
+    expect(result.recipe?.food_facts).toEqual(payload.recipe.food_facts);
+    expect(result.recipe?.recipe.steps[0].timer).toBe(false);
+  });
+
   it.each([{}, { id: '' }, { id: null }])('stops on invalid session %j', async session => {
     const mock = mockAdk([], session);
     await expect(generateRecipe(input, account)).rejects.toBeInstanceOf(RecipesApiError);
@@ -127,11 +143,12 @@ describe('generateRecipe', () => {
 
   it.each([
     [], {}, [{ author: 'chief_agent' }],
+    [event(validResponse, { author: 'editor_agent' })],
     [event(validResponse, { partial: true })],
     [event(validResponse), event({ success: true })],
     [event({ success: false })],
-    [{ author: 'editor_agent', content: null }],
-    [{ author: 'editor_agent', content: { parts: [{ text: 'not json' }] } }],
+    [{ author: 'french_translator_agent', content: null }],
+    [{ author: 'french_translator_agent', content: { parts: [{ text: 'not json' }] } }],
   ])('rejects missing or malformed final responses %j', async events => {
     mockAdk(events);
     await expect(generateRecipe(input, account)).rejects.toBeInstanceOf(RecipesApiError);

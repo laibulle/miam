@@ -15,6 +15,7 @@ export type Ingredient = z.infer<typeof ingredientSchema>;
 export const recipeStepSchema = z.object({
   abstract: z.string(),
   long_description: z.string(),
+  // Step timer duration is in seconds; overall recipe durations are in minutes.
   duration: z.number().nullable().default(null),
   timer: z.boolean(),
   wait_for_end: z.boolean(),
@@ -33,12 +34,22 @@ export const chiefRecipeSchema = z.object({
 });
 export type ChiefRecipe = z.infer<typeof chiefRecipeSchema>;
 
+export const servingFoodFactsSchema = z.object({
+  energy_kcal: z.number().nonnegative(),
+  fat_g: z.number().nonnegative(),
+  carb_g: z.number().nonnegative(),
+  protein_g: z.number().nonnegative(),
+  fiber_g: z.number().nonnegative(),
+});
+
 export const foodFactsSchema = z.object({
   energy100: z.number(),
   fat100: z.number(),
   carb100: z.number(),
   prot100: z.number(),
   fiber100: z.number(),
+  // Older recipes only contain values per 100 g.
+  per_serving: servingFoodFactsSchema.optional(),
 });
 export type FoodFacts = z.infer<typeof foodFactsSchema>;
 

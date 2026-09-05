@@ -20,7 +20,7 @@ The Docker image builds this export automatically. FastAPI serves the exported
 pages and assets at `/` and exposes the standard ADK API on the same origin.
 
 The client adapter calls `POST /apps/{app_name}/users/{user_id}/sessions`, then
-`POST /run`, and validates the final `editor_agent` event. The application name
+`POST /run`, and validates the final `french_translator_agent` event. The application name
 defaults to `app`; set `EXPO_PUBLIC_ADK_APP_NAME` to target another ADK app.
 
 In Expo web development, `app/run+api.ts` and the matching session API route

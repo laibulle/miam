@@ -28,7 +28,7 @@ export const WithTimer: Story = {
     step: {
       abstract: 'Faire tremper',
       long_description: 'Plonger les bâtonnets dans un grand bol d’eau froide pour éliminer l’excès d’amidon.',
-      duration: 30,
+      duration: 1800,
       timer: true,
       wait_for_end: true,
     },

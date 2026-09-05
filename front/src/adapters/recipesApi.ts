@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { recipeResponseSchema, type PromptInput, type RecipeResponse } from '../domain/recipe';
+import { decodeResponseText } from '../domain/text';
 import { AuthenticationError, type GoogleAccount } from './googleAuth';
 
 // Same ADK routes in every environment. Expo only forwards them during web development.
@@ -73,8 +74,8 @@ export async function generateRecipe(input: PromptInput, account: GoogleAccount,
   }, credential, signal));
   if (!events.success) throw new RecipesApiError('La réponse de Miam est invalide.');
 
-  const editor = [...events.data].reverse().find(event => event.author === 'editor_agent' && !event.partial);
-  const text = editor?.content?.parts?.filter(part => !part.thought).map(part => part.text ?? '').join('');
+  const translation = [...events.data].reverse().find(event => event.author === 'french_translator_agent' && !event.partial);
+  const text = translation?.content?.parts?.filter(part => !part.thought).map(part => part.text ?? '').join('');
   if (!text) throw new RecipesApiError("Miam n'a pas retourné de recette exploitable.");
 
   let result: unknown;
@@ -83,7 +84,7 @@ export async function generateRecipe(input: PromptInput, account: GoogleAccount,
   } catch {
     throw new RecipesApiError('La réponse de Miam est invalide.');
   }
-  const parsed = recipeResponseSchema.safeParse(result);
+  const parsed = recipeResponseSchema.safeParse(decodeResponseText(result));
   if (!parsed.success || (parsed.data.success
     ? !parsed.data.recipe || parsed.data.description != null
     : parsed.data.recipe != null || !parsed.data.description?.trim())) {

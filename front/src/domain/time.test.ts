@@ -1,4 +1,18 @@
-import { formatCountdown } from './time';
+import { formatCountdown, formatDuration } from './time';
+
+describe('formatDuration', () => {
+  it.each([
+    [0, '0 s'],
+    [30, '30 s'],
+    [59, '59 s'],
+    [60, '1 min'],
+    [120, '2 min'],
+    [150, '2 min 30 s'],
+    [1800, '30 min'],
+  ])('formats %i seconds as %s', (seconds, expected) => {
+    expect(formatDuration(seconds)).toBe(expected);
+  });
+});
 
 describe('formatCountdown', () => {
   it('formats seconds as mm:ss', () => {

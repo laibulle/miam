@@ -21,12 +21,23 @@ class ExpertRecipeScore(BaseModel):
     substitutions: None | str = None
 
 
+class ServingFoodFacts(BaseModel):
+    energy_kcal: float = Field(ge=0)
+    fat_g: float = Field(ge=0)
+    carb_g: float = Field(ge=0)
+    protein_g: float = Field(ge=0)
+    fiber_g: float = Field(ge=0)
+
+
 class FoodFacts(BaseModel):
     energy100: int
     fat100: int
     carb100: int
     prot100: int
     fiber100: int
+    per_serving: ServingFoodFacts = Field(
+        description="Estimated nutrients for one serving of the final recipe: recipe totals divided by servings."
+    )
 
 
 class ChiefRecipe(BaseModel):
