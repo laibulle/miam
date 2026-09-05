@@ -111,3 +111,15 @@ class RecipeResponse(BaseModel):
                 raise ValueError("description is required when success is false")
 
         return self
+
+class PlannedMeal(BaseModel):
+    day: str = Field(description="Day name or date, in French.")
+    meal: str = Field(description="Meal name, in French.")
+    recipe_titles: list[str] = Field(
+        min_length=1,
+        description="Recipe titles only, in French.",
+    )
+
+
+class WeeklyMenu(BaseModel):
+    meals: list[PlannedMeal] = Field(min_length=1)
