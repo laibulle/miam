@@ -13,7 +13,7 @@ export function NutritionTile({ label, value, unit }: NutritionTileProps) {
     <View style={styles.tile}>
       <Text style={styles.label}>{label}</Text>
       <Text style={styles.value}>
-        {value} <Text style={styles.unit}>{unit}</Text>
+        {value.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} <Text style={styles.unit}>{unit}</Text>
       </Text>
     </View>
   );
@@ -22,6 +22,7 @@ export function NutritionTile({ label, value, unit }: NutritionTileProps) {
 const styles = StyleSheet.create({
   tile: {
     flex: 1,
+    minWidth: 130,
     backgroundColor: colors.surfaceSunken,
     borderRadius: radii.lg,
     padding: spacing.lg,

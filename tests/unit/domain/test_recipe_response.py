@@ -41,7 +41,20 @@ def final_recipe(recipe):
         nutritionist_score=7,
         glut_health_expert_quote="Add vegetables for fiber.",
         glut_health_expert_score=8,
-        food_facts=FoodFacts(energy100=150, fat100=3, carb100=25, prot100=5, fiber100=3),
+        food_facts=FoodFacts(
+            energy100=150,
+            fat100=3,
+            carb100=25,
+            prot100=5,
+            fiber100=3,
+            per_serving={
+                "energy_kcal": 600,
+                "fat_g": 12,
+                "carb_g": 100,
+                "protein_g": 20,
+                "fiber_g": 12,
+            },
+        ),
     )
 
 

@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { colors, radii, spacing, typography } from '../../ui/tokens';
 import { TimerTrigger } from '../../ui/TimerTrigger/TimerTrigger';
 import type { RecipeStep } from '../../../domain/recipe';
+import { formatDuration } from '../../../domain/time';
 
 export interface StepRowProps {
   index: number;
@@ -21,7 +22,7 @@ export function StepRow({ index, step, onStartTimer }: StepRowProps) {
         <Text style={styles.description}>{step.long_description}</Text>
         {step.timer && step.duration ? (
           <View style={styles.timerRow}>
-            <TimerTrigger label={`Lancer ${step.duration} min`} onPress={onStartTimer ?? (() => {})} />
+            <TimerTrigger label={`Lancer ${formatDuration(step.duration)}`} onPress={onStartTimer ?? (() => {})} />
           </View>
         ) : null}
       </View>

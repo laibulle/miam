@@ -123,7 +123,20 @@ def test_expert_score_defaults_missing_recommendations_to_none(fields):
 
 
 def test_food_facts_include_fiber():
-    payload = {"energy100": 150, "fat100": 3, "carb100": 25, "prot100": 5, "fiber100": 3}
+    payload = {
+        "energy100": 150,
+        "fat100": 3,
+        "carb100": 25,
+        "prot100": 5,
+        "fiber100": 3,
+        "per_serving": {
+            "energy_kcal": 600,
+            "fat_g": 12,
+            "carb_g": 100,
+            "protein_g": 20,
+            "fiber_g": 12.5,
+        },
+    }
 
     assert FoodFacts.model_validate(payload).model_dump() == payload
 
@@ -132,3 +145,9 @@ def test_food_facts_include_fiber():
         FoodFacts.model_validate(payload)
 
     assert error.value.errors()[0]["loc"] == ("fiber100",)
+
+
+def test_food_facts_require_per_serving():
+    with pytest.raises(ValidationError) as error:
+        FoodFacts(energy100=150, fat100=3, carb100=25, prot100=5, fiber100=3)
+    assert error.value.errors()[0]["loc"] == ("per_serving",)

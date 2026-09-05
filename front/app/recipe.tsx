@@ -11,7 +11,7 @@ import { TimerFloatingBar } from '@/components/ui/TimerFloatingBar/TimerFloating
 import { colors, spacing, typography } from '@/components/ui/tokens';
 import { ExpertReviewCard } from '@/components/domain/ExpertReviewCard/ExpertReviewCard';
 import { IngredientRow } from '@/components/domain/IngredientRow/IngredientRow';
-import { NutritionTile } from '@/components/domain/NutritionTile/NutritionTile';
+import { NutritionPanel } from '@/components/domain/NutritionPanel/NutritionPanel';
 import { RecipeMetaRow } from '@/components/domain/RecipeMetaRow/RecipeMetaRow';
 import { StepRow } from '@/components/domain/StepRow/StepRow';
 import { formatCountdown } from '@/domain/time';
@@ -35,9 +35,9 @@ export default function RecipeScreen() {
 
   const { recipe } = result;
 
-  const handleStartTimer = (stepIndex: number, durationMinutes: number) => {
+  const handleStartTimer = (stepIndex: number, durationSeconds: number) => {
     setActiveStepIndex(stepIndex);
-    countdown.start(durationMinutes * 60);
+    countdown.start(durationSeconds);
   };
 
   const handleDismissTimer = () => {
@@ -127,12 +127,7 @@ export default function RecipeScreen() {
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Valeurs nutritionnelles</Text>
-        <View style={styles.nutritionGrid}>
-          <NutritionTile label="Calories" value={result.food_facts.energy100} unit="kcal" />
-          <NutritionTile label="Protéines" value={result.food_facts.prot100} unit="g" />
-          <NutritionTile label="Glucides" value={result.food_facts.carb100} unit="g" />
-          <NutritionTile label="Lipides" value={result.food_facts.fat100} unit="g" />
-        </View>
+        <NutritionPanel facts={result.food_facts} />
       </View>
 
       <Text style={styles.disclaimer}>Miam peut se tromper. Vérifie les informations importantes avant de te lancer.</Text>
@@ -175,11 +170,6 @@ const styles = StyleSheet.create({
   tip: {
     ...typography.bodyM,
     color: colors.inkMuted,
-  },
-  nutritionGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md,
   },
   disclaimer: {
     ...typography.caption,
