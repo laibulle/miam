@@ -115,7 +115,7 @@ class RecipeResponse(BaseModel):
 
 
 class PlannedMeal(BaseModel):
-    day: int = Field(description="Day name or date")
+    day: int = Field(description="Day number 0 is monday")
     meal: str = Field(description="Meal name")
     recipe_title: str = Field(
         description="Recipe titles",
