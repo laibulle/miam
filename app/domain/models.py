@@ -12,6 +12,7 @@ class RecipeSuggestion(BaseModel):
 
 class ExpertRecipesScore(BaseModel):
     scores: list[ExpertRecipeScore]
+    user_instructions: str = Field(description="Practical advice addressed to the user.")
 
 
 class ExpertRecipeScore(BaseModel):
@@ -111,3 +112,22 @@ class RecipeResponse(BaseModel):
                 raise ValueError("description is required when success is false")
 
         return self
+
+
+class PlannedMeal(BaseModel):
+    day: int = Field(description="Day number 0 is monday")
+    meal: str = Field(description="Meal name")
+    recipe_title: str = Field(
+        description="Recipe titles",
+    )
+    ingredients: list[Ingredient]
+
+
+class WeeklyMenu(BaseModel):
+    meals: list[PlannedMeal] = Field(min_length=1)
+
+
+class FinalWeeklyMenu(WeeklyMenu):
+    user_instructions: str = Field(
+        description="Consolidated expert advice consistent with the final menu."
+    )

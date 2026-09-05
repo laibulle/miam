@@ -75,3 +75,17 @@ __Sample for adk web__
   "month": 9
 }
 ```
+
+```json
+{
+  "prompt": "Plan 7 fast dinner for my week",
+  "activity_level": 2,
+  "age": 35,
+  "gender": "male",
+  "height_cm": 180,
+  "weight_kg": 75,
+  "sports": ["running", "cycling"],
+  "country": "France",
+  "month": 9
+}
+```
