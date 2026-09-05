@@ -112,13 +112,14 @@ class RecipeResponse(BaseModel):
 
         return self
 
+
 class PlannedMeal(BaseModel):
-    day: str = Field(description="Day name or date, in French.")
-    meal: str = Field(description="Meal name, in French.")
-    recipe_titles: list[str] = Field(
-        min_length=1,
-        description="Recipe titles only, in French.",
+    day: int = Field(description="Day name or date")
+    meal: str = Field(description="Meal name")
+    recipe_title: str = Field(
+        description="Recipe titles",
     )
+    ingredients: list[Ingredient]
 
 
 class WeeklyMenu(BaseModel):

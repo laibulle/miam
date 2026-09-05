@@ -8,7 +8,7 @@ editor_agent = Agent(
     mode="single_turn",
     model=MODEL_NAME,
     output_schema=RecipeResponse,
-    output_key="assembled_recipe",
+    output_key="final_non_translated_response",
     instruction="""
     You assemble and present the final recipe in English.
 

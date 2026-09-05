@@ -8,11 +8,14 @@ from app.subagents.config import MODEL_NAME
 DETAILED_MEAL = "detailed_meal"
 WEEKLY_MENU = "weekly_menu"
 
+
 class Intent(BaseModel):
     route: Literal[DETAILED_MEAL, WEEKLY_MENU]
 
+
 def router(node_input: Intent):
     return Event(route=node_input.route)
+
 
 intent_agent = Agent(
     name="intent_agent",
@@ -31,5 +34,4 @@ intent_agent = Agent(
     
         Return the result using the configured output schema.
        """,
-
 )
