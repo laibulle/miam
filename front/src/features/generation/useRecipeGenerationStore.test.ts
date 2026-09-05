@@ -70,6 +70,24 @@ describe('useRecipeGenerationStore', () => {
     expect(useRecipeGenerationStore.getState().errorMessage).toBe('Aucune recette trouvée.');
   });
 
+  it('stores a menu, clears it for the next recipe, and resets it on logout', async () => {
+    const menu = {
+      meals: [{ day: 1, meal: 'Dîner', recipe_title: 'Pâtes', ingredients: [] }],
+      user_instructions: 'Préparer la sauce.',
+    };
+    mockedGenerateRecipe.mockResolvedValue({ success: true, menu });
+    await useRecipeGenerationStore.getState().generate(defaultProfile);
+    expect(useRecipeGenerationStore.getState()).toMatchObject({ status: 'success', menu, result: null });
+
+    mockedGenerateRecipe.mockResolvedValue({ success: true, recipe: finalRecipeFixture });
+    await useRecipeGenerationStore.getState().generate(defaultProfile);
+    expect(useRecipeGenerationStore.getState()).toMatchObject({ menu: null, result: finalRecipeFixture });
+
+    useRecipeGenerationStore.setState({ menu });
+    useRecipeGenerationStore.getState().reset();
+    expect(useRecipeGenerationStore.getState()).toMatchObject({ status: 'idle', menu: null, result: null });
+  });
+
   it('surfaces a message when the adapter throws', async () => {
     mockedGenerateRecipe.mockRejectedValue(new Error('boom'));
 

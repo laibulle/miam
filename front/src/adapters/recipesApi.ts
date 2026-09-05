@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { recipeResponseSchema, type PromptInput, type RecipeResponse } from '../domain/recipe';
+import { mealPlanSchema, type MealPlan } from '../domain/mealPlan';
 import { decodeResponseText } from '../domain/text';
 import { AuthenticationError, type GoogleAccount } from './googleAuth';
 
@@ -20,6 +21,8 @@ const eventsSchema = z.array(z.object({
 }));
 
 export class RecipesApiError extends Error {}
+
+export type GenerationResponse = RecipeResponse & { menu?: MealPlan };
 
 function checkAborted(signal?: AbortSignal) {
   if (signal?.aborted) {
@@ -46,7 +49,7 @@ async function postAdk(path: string, body: unknown, credential: string, signal?:
   }
   if (response.status === 401) throw new AuthenticationError('Your session has expired. Please sign in again.');
   if (!response.ok) {
-    throw new RecipesApiError("Miam n'a pas réussi à générer de recette. Réessaie dans un instant.");
+    throw new RecipesApiError("Miam n'a pas réussi à préparer ta suggestion. Réessaie dans un instant.");
   }
   try {
     return await response.json();
@@ -56,7 +59,7 @@ async function postAdk(path: string, body: unknown, credential: string, signal?:
   }
 }
 
-export async function generateRecipe(input: PromptInput, account: GoogleAccount, signal?: AbortSignal): Promise<RecipeResponse> {
+export async function generateRecipe(input: PromptInput, account: GoogleAccount, signal?: AbortSignal): Promise<GenerationResponse> {
   checkAborted(signal);
   if (!account?.credential || !account.userId) throw new AuthenticationError('Authentication required.');
   const { userId, credential } = account;
@@ -74,9 +77,10 @@ export async function generateRecipe(input: PromptInput, account: GoogleAccount,
   }, credential, signal));
   if (!events.success) throw new RecipesApiError('La réponse de Miam est invalide.');
 
-  const translation = [...events.data].reverse().find(event => event.author === 'french_translator_agent' && !event.partial);
+  const translation = [...events.data].reverse().find(event =>
+    ['french_translator_agent', 'menu_translator_agent'].includes(event.author) && !event.partial);
   const text = translation?.content?.parts?.filter(part => !part.thought).map(part => part.text ?? '').join('');
-  if (!text) throw new RecipesApiError("Miam n'a pas retourné de recette exploitable.");
+  if (!text) throw new RecipesApiError("Miam n'a pas retourné de résultat exploitable.");
 
   let result: unknown;
   try {
@@ -84,7 +88,13 @@ export async function generateRecipe(input: PromptInput, account: GoogleAccount,
   } catch {
     throw new RecipesApiError('La réponse de Miam est invalide.');
   }
-  const parsed = recipeResponseSchema.safeParse(decodeResponseText(result));
+  const decoded = decodeResponseText(result);
+  if (translation?.author === 'menu_translator_agent') {
+    const menu = mealPlanSchema.safeParse(decoded);
+    if (!menu.success) throw new RecipesApiError('La réponse de Miam est invalide.');
+    return { success: true, menu: menu.data };
+  }
+  const parsed = recipeResponseSchema.safeParse(decoded);
   if (!parsed.success || (parsed.data.success
     ? !parsed.data.recipe || parsed.data.description != null
     : parsed.data.recipe != null || !parsed.data.description?.trim())) {

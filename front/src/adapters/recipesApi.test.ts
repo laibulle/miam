@@ -84,6 +84,32 @@ describe('generateRecipe', () => {
     expect(mock).not.toHaveBeenCalled();
   });
 
+  it('reads the final menu translation and decodes its advice', async () => {
+    const menu = {
+      meals: [{ day: 1, meal: 'Dîner', recipe_title: 'P&#226;tes', ingredients: [] }],
+      user_instructions: 'Pr&#233;parer la sauce.\nCongeler une portion.',
+    };
+    mockAdk([
+      event(menu, { author: 'menu_editor_agent' }),
+      event(menu, { author: 'menu_translator_agent' }),
+      event({}, { author: 'menu_translator_agent', partial: true }),
+    ]);
+
+    const result = await generateRecipe(input, account);
+    expect(result.success).toBe(true);
+    expect(result.recipe).toBeUndefined();
+    expect(result.menu?.meals[0].recipe_title).toBe('Pâtes');
+    expect(result.menu?.user_instructions).toBe('Préparer la sauce.\nCongeler une portion.');
+  });
+
+  it.each([
+    { meals: [], user_instructions: '' },
+    { meals: [{ day: 1, meal: 'Dîner', recipe_title: 'Pâtes', ingredients: [] }] },
+  ])('rejects an incomplete menu', async menu => {
+    mockAdk([event(menu, { author: 'menu_translator_agent' })]);
+    await expect(generateRecipe(input, account)).rejects.toBeInstanceOf(RecipesApiError);
+  });
+
   it.each([0, 1])('requests sign-in when the token expires at ADK stage %i', async stage => {
     const mock = jest.fn();
     if (stage) mock.mockResolvedValueOnce({ ok: true, json: async () => ({ id: 's' }) });

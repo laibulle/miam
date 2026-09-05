@@ -5,6 +5,7 @@ import { useAuthStore } from '../auth/useAuthStore';
 import { generateRecipe, RecipesApiError } from '../../adapters/recipesApi';
 import type { Profile } from '../../domain/profile';
 import type { FinalRecipe } from '../../domain/recipe';
+import type { MealPlan } from '../../domain/mealPlan';
 
 type Status = 'idle' | 'loading' | 'success' | 'error';
 
@@ -12,6 +13,7 @@ interface GenerationState {
   promptText: string;
   status: Status;
   result: FinalRecipe | null;
+  menu: MealPlan | null;
   errorMessage: string | null;
   setPromptText: (text: string) => void;
   reset: () => void;
@@ -24,12 +26,13 @@ export const useRecipeGenerationStore = create<GenerationState>((set, get) => ({
   promptText: '',
   status: 'idle',
   result: null,
+  menu: null,
   errorMessage: null,
   setPromptText: (promptText) => set({ promptText }),
   reset: () => {
     activeRequest?.abort();
     activeRequest = null;
-    set({ promptText: '', status: 'idle', result: null, errorMessage: null });
+    set({ promptText: '', status: 'idle', result: null, menu: null, errorMessage: null });
   },
   generate: async (profile) => {
     activeRequest?.abort();
@@ -37,7 +40,7 @@ export const useRecipeGenerationStore = create<GenerationState>((set, get) => ({
     activeRequest = request;
     const { promptText } = get();
     const month = new Date().getMonth() + 1;
-    set({ status: 'loading', result: null, errorMessage: null });
+    set({ status: 'loading', result: null, menu: null, errorMessage: null });
     try {
       const account = useAuthStore.getState().account;
       if (!account) throw new AuthenticationError('Please sign in to continue.');
@@ -53,10 +56,12 @@ export const useRecipeGenerationStore = create<GenerationState>((set, get) => ({
         month,
       }, account, request.signal);
       if (activeRequest !== request) return;
-      if (response.success && response.recipe) {
+      if (response.success && response.menu) {
+        set({ status: 'success', menu: response.menu, errorMessage: null });
+      } else if (response.success && response.recipe) {
         set({ status: 'success', result: response.recipe, errorMessage: null });
       } else {
-        set({ status: 'error', errorMessage: response.description ?? "Miam n'a pas pu générer de recette." });
+        set({ status: 'error', errorMessage: response.description ?? "Miam n'a pas pu préparer ta suggestion." });
       }
     } catch (error) {
       if (activeRequest !== request) return;
