@@ -47,11 +47,17 @@ npm run build:web
 - [x] Implement multiple agents with tools
 - [x] Setup cloudrun
 - [x] GenAI UI
-- [ ] Add Eval
-- [ ] Add food facts DB for procedural accurate food fact computation
 - [ ] User settings store
-- [ ] Define guardrails
 - [ ] Prod ready logging and observability
+- [ ] Terraform setup
+- [ ] Weekly meal planner
+
+__Further explorations out of scope for a V2__
+
+- [ ] Integrate Ciqual XML data for really accurate food facts
+- [ ] Crossing Ciqual data with seasonality of foods
+- [ ] Create a detailed RAG for nutrition recomandations
+- [ ] Procedural food fact computation
 
 
 __Sample for adk web__
